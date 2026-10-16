@@ -29,10 +29,10 @@
 ### Quiz (풀이)
 
 - [x] **QUIZ-01**: 스터디원은 링크를 열면 로그인 없이 이번 주 세트를 풀 수 있고, 처음 한 번 이름을 고른다(6명 목록)
-- [ ] **QUIZ-02**: 10문제를 한 흐름으로 풀 수 있고, 코드는 읽기 쉽게(고정폭 글꼴, 줄바꿈 유지) 표시된다
-- [ ] **QUIZ-03**: 풀던 답은 브라우저에 자동 저장되어 창을 닫았다 와도 이어서 풀 수 있다
+- [x] **QUIZ-02**: 10문제를 한 흐름으로 풀 수 있고, 코드는 읽기 쉽게(고정폭 글꼴, 줄바꿈 유지) 표시된다
+- [x] **QUIZ-03**: 풀던 답은 브라우저에 자동 저장되어 창을 닫았다 와도 이어서 풀 수 있다
 - [ ] **QUIZ-04**: 제출 전 빈 문항 수를 확인하고, 제출하면 그 세트의 첫 시도 답이 고정된다
-- [ ] **QUIZ-05**: 모바일 브라우저에서도 풀이부터 제출까지 가능하다
+- [x] **QUIZ-05**: 모바일 브라우저에서도 풀이부터 제출까지 가능하다
 
 ### Results (채점·해설)
 
@@ -64,8 +64,8 @@
 
 ### Design (화면)
 
-- [ ] **DSGN-01**: 첫 화면과 전체 디자인(글꼴·색·여백)은 design-taste-frontend 기준을 따르고, 퀴즈·결과·오답 화면도 같은 방향으로 맞춘다
-- [ ] **DSGN-02**: 모든 화면은 한국어다
+- [x] **DSGN-01**: 첫 화면과 전체 디자인(글꼴·색·여백)은 design-taste-frontend 기준을 따르고, 퀴즈·결과·오답 화면도 같은 방향으로 맞춘다
+- [x] **DSGN-02**: 모든 화면은 한국어다
 
 ## v2 Requirements
 
@@ -97,17 +97,17 @@
 | FMT-04 | Phase 1 | Complete |
 | FMT-05 | Phase 1 | Complete |
 | QUIZ-01 | Phase 1 | Complete |
-| QUIZ-02 | Phase 1 | Pending |
-| QUIZ-03 | Phase 1 | Pending |
+| QUIZ-02 | Phase 1 | Complete |
+| QUIZ-03 | Phase 1 | Complete |
 | QUIZ-04 | Phase 1 | Pending |
-| QUIZ-05 | Phase 1 | Pending |
+| QUIZ-05 | Phase 1 | Complete |
 | RSLT-01 | Phase 1 | Complete |
 | RSLT-02 | Phase 1 | Pending |
 | RSLT-03 | Phase 1 | Complete |
 | RSLT-04 | Phase 1 | Pending |
 | RSLT-05 | Phase 1 | Pending |
-| DSGN-01 | Phase 1 | Pending |
-| DSGN-02 | Phase 1 | Pending |
+| DSGN-01 | Phase 1 | Complete |
+| DSGN-02 | Phase 1 | Complete |
 | GEN-01 | Phase 2 | Pending |
 | GEN-02 | Phase 2 | Pending |
 | GEN-03 | Phase 2 | Pending |

@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 1
 current_phase_name: quiz-core (풀이·채점·해설 사이트)
 status: executing
-stopped_at: Completed 01-04-PLAN.md
-last_updated: "2026-10-16T11:52:00.194Z"
+stopped_at: Completed 01-05-PLAN.md
+last_updated: "2026-10-16T12:12:18.073Z"
 last_activity: 2026-10-16
 last_activity_desc: Phase 1 execution started
-state_head: 80b814fac912b1a9cb987de806972ee7d4a3bdec
+state_head: 3a6d6d5ecd96c59c8596e752603762a74c11b2e8
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 5
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-16)
 ## Current Position
 
 Phase: 1 (quiz-core (풀이·채점·해설 사이트)) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 Status: Ready to execute
 Last activity: 2026-10-16 — Phase 1 execution started
 
@@ -60,6 +60,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P02 | 10 min | 2 tasks | 11 files |
 | Phase 01 P03 | 19 min | 2 tasks | 16 files |
 | Phase 01 P04 | about 1 h active | 2 tasks | 5 files |
+| Phase 1 P05 | 18 min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,8 @@ Recent decisions affecting current work:
 - [Phase 01]: Plan 01-03: home folder stack uses two back folders with three member tabs each (3+3) so 풀기 시작 fits the first screen; the previewed tab turns paper, not ink
 - [Phase 01]: Plan 01-03: entrances use CSS animation on the independent translate property (html.js + reduced-motion gated) so hover transforms keep working; css/site.css is frozen for wave 3
 - [Phase 01]: 01-04: section grounds ink -> pale blue slip -> slate shelf -> ink card back; spines at the lead step so ten spines fill 1440; credits list all eight pictures; accordion via details::details-content
+- [Phase 1]: 01-05: sheet paper is unclipped (perforated dotted side border, ground triangles at the top corners) so archival plates can hang in the margin beside the question they sit with; ground plates show from 1200px
+- [Phase 1]: 01-05: draft autosave in js/quiz.js (300ms debounce, immediate on change, flushed on visibilitychange/pagehide), restored only through sanitizeAnswers; #storage-notice lives in the sheet header and is shown whenever store.persistent is false or a set() fails
 
 ### Pending Todos
 
@@ -102,6 +105,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-16T11:52:00.143Z
-Stopped at: Completed 01-04-PLAN.md
+Last session: 2026-10-16T12:12:18.032Z
+Stopped at: Completed 01-05-PLAN.md
 Resume file: None
