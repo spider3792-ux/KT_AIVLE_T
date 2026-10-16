@@ -575,6 +575,11 @@ pre.code code {
   line-height: 1.55;
 }
 
+/* The question follows its code block with a clear gap (the fieldset and prompt margins would otherwise win over the list rule). */
+.q-body > pre.code + * {
+  margin-top: 24px;
+}
+
 .q-body > .q-result + * {
   margin-top: clamp(24px, 4vw, 32px);
 }
