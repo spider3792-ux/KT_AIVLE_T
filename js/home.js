@@ -1,13 +1,33 @@
-// Home controller: this week's title from the index, the name picker, 풀기 시작.
-// The folder (fieldset, #start, #start-hint) is static markup in index.html; this script fills and wires it.
+// Home controller: this week's title from the index, the member tabs on the folder stack, the name
+// picker, 풀기 시작. The folder (fieldset, #start, #start-hint) is static markup in index.html;
+// this script fills and wires it.
 import { el, loadMembers, loadWeek, renderError, store } from './site.js';
+import { reveal, stagger } from './motion.js';
 
 const app = document.querySelector('#app');
+const stack = document.querySelector('#stack');
 const sub = document.querySelector('#hero-sub');
 const grid = document.querySelector('#members');
 const startButton = document.querySelector('#start');
 const hint = document.querySelector('#start-hint');
 const original = [...app.childNodes];
+
+// The back folders carry the member tabs: split the names evenly over the bands.
+function buildTabs(members) {
+  const bands = [...stack.querySelectorAll('.band')];
+  for (const band of bands) band.replaceChildren();
+  const perBand = Math.ceil(members.length / bands.length) || 1;
+  members.forEach((m, i) => {
+    const band = bands[Math.min(Math.floor(i / perBand), bands.length - 1)];
+    band.append(
+      el('button', {
+        class: 'tab',
+        text: m.name,
+        attrs: { type: 'button', 'data-member': m.name, 'aria-controls': 'preview', 'aria-pressed': 'false', 'data-reveal': '' },
+      }),
+    );
+  });
+}
 
 async function start() {
   let week;
@@ -45,6 +65,12 @@ async function start() {
     ),
   );
 
+  buildTabs(members);
+
+  // The tabs arrive after their bands.
+  stagger(stack, '.tab', 5);
+  reveal();
+
   if (store.get('attempt:' + entry.id)) startButton.textContent = '결과 다시 보기';
 
   startButton.addEventListener('click', () => {
@@ -60,4 +86,8 @@ async function start() {
   });
 }
 
+// Entrances in reading order: top row, headline, sentence, back folders, front folder, picker, button.
+// The static parts reveal even if the data never arrives.
+stagger(document.body, '[data-reveal]');
+reveal();
 start();

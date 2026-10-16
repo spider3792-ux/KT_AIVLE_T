@@ -5,33 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>이번 주 시험지 · 스터디 복습 퀴즈</title>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <script src="js/boot.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="css/site.css">
+  <link rel="stylesheet" href="css/home.css">
   <script type="module" src="js/home.js"></script>
 </head>
 <body class="home">
-  <header class="home-top">
+  <header class="home-top" data-reveal="load">
     <a class="wordmark" href="index.html">스터디 복습 퀴즈</a>
     <a id="past-weeks" class="text-link" href="index.html" hidden>지난 주차</a>
   </header>
   <main>
     <section class="hero">
-      <h1>이번 주 시험지</h1>
-      <p id="hero-sub" class="hero-sub"></p>
+      <h1 data-reveal="load">이번 주 시험지</h1>
+      <p id="hero-sub" class="hero-sub" data-reveal="load"></p>
     </section>
-    <div class="folder-wrap">
-      <section id="app" class="folder">
-        <fieldset class="member-pick">
+    <div id="stack" class="stack">
+      <div class="band" data-reveal="load"></div>
+      <div class="band" data-reveal="load"></div>
+      <section id="app" class="folder" data-reveal="load">
+        <h2 class="folder-tab">시험지</h2>
+        <div id="preview" class="preview" aria-live="polite" data-state="idle">
+          <p class="preview-idle">폴더 탭을 가리키거나 눌러 보세요. 그 사람의 이번 주 기록과 문제 수가 나와요.</p>
+        </div>
+        <fieldset class="member-pick" data-reveal>
           <legend>이름을 골라 주세요</legend>
           <div id="members" class="member-grid"></div>
         </fieldset>
-        <div class="folder-action">
+        <div class="folder-action" data-reveal>
           <button id="start" class="button" type="button">풀기 시작</button>
           <p id="start-hint" class="start-hint" role="status"></p>
         </div>
-        <noscript><p>이 사이트는 자바스크립트가 켜져 있어야 쓸 수 있어요.</p></noscript>
+        <noscript><p class="folder-note">이 사이트는 자바스크립트가 켜져 있어야 쓸 수 있어요.</p></noscript>
       </section>
     </div>
   </main>
