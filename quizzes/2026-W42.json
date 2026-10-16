@@ -1,0 +1,57 @@
+{
+  "id": "2026-W42",
+  "title": "10월 셋째 주 시험지",
+  "range": { "from": "2026-10-09", "to": "2026-10-16" },
+  "estimatedMinutes": 15,
+  "sources": [
+    { "id": "s1", "author": "김준수", "date": "2026-10-13", "title": "groupby로 월별 매출 집계하기", "subject": "Pandas" },
+    { "id": "s2", "author": "이주현", "date": "2026-10-14", "title": "merge와 결측치 확인 정리", "subject": "Pandas" },
+    { "id": "s3", "author": "차승환", "date": "2026-10-14", "title": "matplotlib 객체 지향 방식 정리", "subject": "데이터 시각화" }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "kind": "concept",
+      "type": "choice",
+      "prompt": "df.groupby('지역')만 실행하고 결과를 출력하면 무엇이 나오나요?",
+      "choices": [
+        "지역별 평균이 계산된 DataFrame",
+        "묶는 기준만 기억해 둔 DataFrameGroupBy 객체",
+        "지역별로 쪼개진 DataFrame 리스트",
+        "지역 열만 모아 놓은 Series"
+      ],
+      "answer": 1,
+      "explanation": "groupby()만으로는 아직 아무것도 계산하지 않아요.\n묶는 기준을 기억해 둔 DataFrameGroupBy 객체가 나와요.\nmean(), sum() 같은 집계 함수를 붙여야 값이 계산돼요.\n예: df.groupby('지역')['매출'].sum()",
+      "concept": { "name": "groupby", "ref": "pandas 공식 문서 · GroupBy" },
+      "sourceIds": ["s1"]
+    },
+    {
+      "id": "q3",
+      "kind": "concept",
+      "type": "short",
+      "prompt": "DataFrame df에서 열마다 결측치가 몇 개인지 한 번에 세는 메서드 체인을 적어 보세요.",
+      "answer": ["isna().sum()", "isnull().sum()", "df.isna().sum()", "df.isnull().sum()"],
+      "explanation": "isna()는 값이 비어 있으면 True인 표를 돌려줘요.\nTrue는 1로 계산되므로 sum()을 붙이면 열별 개수가 나와요.\nisnull()은 isna()의 별칭이라 결과가 같아요.\ncount()는 비어 있지 않은 값을 세므로 반대예요.",
+      "concept": { "name": "결측치 확인", "ref": "pandas 공식 문서 · DataFrame.isna" },
+      "sourceIds": ["s2"]
+    },
+    {
+      "id": "q8",
+      "kind": "code",
+      "type": "choice",
+      "prompt": "이 코드는 분석의 어느 단계에서 무엇을 하려는 코드인가요?",
+      "code": "monthly = (\n    df.groupby(df[\"날짜\"].dt.to_period(\"M\"))[\"매출\"]\n    .sum()\n    .reset_index()\n)\nprint(monthly.head())",
+      "choices": [
+        "전처리 단계: 결측치를 채우고 이상치를 지운다",
+        "탐색 단계: 월별 매출 흐름을 보려고 집계한다",
+        "모델링 단계: 다음 달 매출을 예측하는 모델을 학습한다",
+        "시각화 단계: 월별 매출을 막대그래프로 그린다"
+      ],
+      "answer": 1,
+      "explanation": "날짜를 월 단위로 묶어 매출 합계를 구하는 집계예요.\n데이터를 처음 훑어보는 탐색(EDA) 단계의 작업이에요.\n값을 고치지도, 모델을 학습하지도 않아요.\n그래프는 이 결과를 plt나 seaborn에 넘겨야 그려져요.",
+      "concept": { "name": "기간별 집계", "ref": "pandas 공식 문서 · Series.dt.to_period" },
+      "sourceIds": ["s1"],
+      "file": "sales.csv"
+    }
+  ]
+}
