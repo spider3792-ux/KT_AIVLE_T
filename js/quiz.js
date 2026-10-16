@@ -1,11 +1,139 @@
 // Exam sheet controller: render the set, grade on 답안 제출, freeze the first attempt, show it again on reload.
-import { el, loadMembers, loadWeek, renderError, store } from './site.js';
+import { el, loadMembers, loadWeek, renderError, ROOT, store } from './site.js';
 import { correctAnswerText, gradeSet, sanitizeAnswers } from './grade.js';
+import { reveal, stagger } from './motion.js';
 
 const app = document.querySelector('#app');
 const requestedId = new URLSearchParams(location.search).get('set') || '';
 
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Archival plates tipped onto the sheet. Titles, licences and pages come from assets/credits.json (assets.mjs --credits);
+// the credit paragraph at the foot of the paper names exactly the pictures this page renders.
+const PLATES = {
+  card: {
+    file: 'assets/hollerith-punched-card.jpg',
+    width: 1200,
+    height: 538,
+    alt: '1895년 무렵의 홀러리스 천공 카드. 숫자와 기호가 인쇄된 표 위에 둥근 구멍이 뚫려 있다.',
+    title: 'Hollerith Punched Card',
+    creator: null,
+    page: 'https://commons.wikimedia.org/wiki/File:Hollerith_Punched_Card.jpg',
+    license: 'public domain',
+    licenseUrl: 'https://creativecommons.org/publicdomain/mark/1.0/',
+  },
+  machines: {
+    file: 'assets/tabulating-machines-census.jpg',
+    width: 1280,
+    height: 1651,
+    alt: '인구조사국 사무실에서 두 남자가 집계 기계에 천공 카드 묶음을 올려 두고 일하는 흑백 사진.',
+    title: 'Tabulating machines, Census LCCN2016823353',
+    creator: 'National Photo Company Collection',
+    page: 'https://commons.wikimedia.org/wiki/File:Tabulating_machines,_Census_LCCN2016823353.jpg',
+    license: 'public domain',
+    licenseUrl: 'https://creativecommons.org/publicdomain/mark/1.0/',
+  },
+  nightingale: {
+    file: 'assets/nightingale-mortality.jpg',
+    width: 1280,
+    height: 700,
+    alt: '나이팅게일이 그린 동부 전선 군대의 사망 원인 도표. 달마다 부채꼴 면적으로 사망자 수를 나타낸다.',
+    title: 'Nightingale-mortality',
+    creator: 'Florence Nightingale',
+    page: 'https://commons.wikimedia.org/wiki/File:Nightingale-mortality.jpg',
+    license: 'public domain',
+    licenseUrl: 'https://creativecommons.org/publicdomain/mark/1.0/',
+  },
+  playfair: {
+    file: 'assets/playfair-piecharts.jpg',
+    width: 1280,
+    height: 702,
+    alt: '플레이페어가 1801년에 그린 통계 지도. 유럽 여러 나라의 면적과 인구를 원과 막대로 견준다.',
+    title: 'Playfair piecharts',
+    creator: 'William Playfair',
+    page: 'https://commons.wikimedia.org/wiki/File:Playfair_piecharts.jpg',
+    license: 'public domain',
+    licenseUrl: 'https://creativecommons.org/publicdomain/mark/1.0/',
+  },
+  'census-machine': {
+    file: 'assets/hollerith-census-machine.jpg',
+    width: 1280,
+    height: 1155,
+    alt: '컴퓨터 역사 박물관에 전시된 홀러리스 인구조사 집계 기계. 카드를 읽어 숫자를 세는 금속 장치다.',
+    title: 'Hollerith census machine at CHM by Tomwsulcer',
+    creator: 'Tomwsulcer',
+    page: 'https://commons.wikimedia.org/w/index.php?curid=46063689',
+    license: 'CC0',
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/deed.en/',
+  },
+  drawers: {
+    file: 'assets/card-catalog-drawers.jpg',
+    width: 1280,
+    height: 960,
+    alt: '작은 서랍이 줄지어 달린 나무 도서 카드 목록함. 서랍마다 색인 카드가 들어 있다.',
+    title: 'Wooden Card Catalog Furniture',
+    creator: 'MarkBuckawicki',
+    page: 'https://commons.wikimedia.org/w/index.php?curid=68147692',
+    license: 'CC0',
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/deed.en/',
+  },
+  census: {
+    file: 'assets/census-form-1890.jpg',
+    width: 1280,
+    height: 1857,
+    alt: '1890년 미국 인구조사의 가족 조사표. 칸마다 질문이 인쇄돼 있고 왼쪽 가장자리에 구멍이 뚫려 있다.',
+    title: '1890 U.S. Census form',
+    creator: null,
+    page: 'https://commons.wikimedia.org/wiki/File:1890_U.S._Census_form.jpg',
+    license: 'public domain',
+    licenseUrl: 'https://creativecommons.org/publicdomain/mark/1.0/',
+  },
+};
+
+// Which question each ground plate sits beside (index into set.questions) and on which side of the paper.
+const GROUND_PLATES = [
+  { key: 'machines', at: 'head', side: 'left', tall: true },
+  { key: 'census-machine', at: 1, side: 'right' },
+  { key: 'drawers', at: 3, side: 'left' },
+  { key: 'nightingale', at: 6, side: 'left', drift: true },
+  { key: 'playfair', at: 8, side: 'right' },
+];
+
+function plate(key, extra = '') {
+  const p = PLATES[key];
+  return el(
+    'figure',
+    { class: `plate sheet-plate ${extra}`.trim(), dataset: { pic: key }, attrs: { 'data-reveal': extra.includes('head') ? 'load' : 'plate' } },
+    el('img', { attrs: { src: new URL(p.file, ROOT).href, alt: p.alt, width: p.width, height: p.height, loading: 'lazy', decoding: 'async' } }),
+  );
+}
+
+// Builds <p class="credits"> for the foot of the paper.
+function creditsFor(keys) {
+  const p = el('p', { class: 'credits' }, '사진: ');
+  keys.forEach((key, i) => {
+    const c = PLATES[key];
+    if (i > 0) p.append('; ');
+    p.append(
+      el('a', { text: `“${c.title}”`, attrs: { href: c.page } }),
+      c.creator ? ` by ${c.creator}` : '',
+      ', ',
+      el('a', { text: c.license, attrs: { href: c.licenseUrl } }),
+      ', via Wikimedia Commons',
+    );
+  });
+  p.append('.');
+  return p;
+}
+
+// 2026-10-09 -> "10/9"
+function monthDay(iso) {
+  const m = /^[0-9]{4}-([0-9]{2})-([0-9]{2})/.exec(String(iso || ''));
+  return m ? `${Number(m[1])}/${Number(m[2])}` : '';
+}
+
+// Four short choices sit two by two on a wide sheet; anything longer keeps one column.
+const SHORT_CHOICE = 14;
 
 async function start() {
   app.replaceChildren(el('p', { class: 'loading', text: '시험지를 불러오는 중이에요.', attrs: { role: 'status' } }));
@@ -30,7 +158,7 @@ async function start() {
   render(data.set, members);
 }
 
-function buildQuestion(q) {
+function buildQuestion(q, index, all) {
   const body = el('div', { class: 'q-body' });
   const codeId = `${q.id}-code`;
   const hasCode = q.kind === 'code' && typeof q.code === 'string' && q.code.length > 0;
@@ -43,8 +171,10 @@ function buildQuestion(q) {
 
   if (q.type === 'choice') {
     const fieldset = el('fieldset', { attrs: { 'aria-describedby': hasCode ? codeId : null } }, el('legend', { text: q.prompt }));
+    const short = q.choices.every((choice) => String(choice).length <= SHORT_CHOICE);
+    const opts = el('div', { class: short ? 'opts opts--grid' : 'opts' });
     q.choices.forEach((choice, index) => {
-      fieldset.append(
+      opts.append(
         el(
           'label',
           { class: 'opt' },
@@ -53,6 +183,7 @@ function buildQuestion(q) {
         ),
       );
     });
+    fieldset.append(opts);
     body.append(fieldset);
   } else {
     const input = el('input', {
@@ -78,7 +209,16 @@ function buildQuestion(q) {
     body.append(el('label', { class: 'q-prompt', text: q.prompt, attrs: { for: `${q.id}-a` } }), input);
   }
 
-  return el('li', { class: 'q', attrs: { id: q.id }, dataset: { qid: q.id, kind: q.kind } }, body);
+  // An exam prints where each part starts: a strip above the first question of the 개념 part and of the 코드 분석 part.
+  const startsPart = index === 0 || all[index - 1].kind !== q.kind;
+  let part = null;
+  if (startsPart) {
+    const first = index + 1;
+    let last = first;
+    while (last < all.length && all[last].kind === q.kind) last += 1; // last is now the 1-based number of the final question
+    part = el('p', { class: 'part', text: `${q.kind === 'code' ? '코드 분석' : '개념'} · ${first === last ? `${first}번` : `${first}–${last}번`}` });
+  }
+  return el('li', { class: startsPart ? 'q part-start' : 'q', attrs: { id: q.id, 'data-reveal': 'q' }, dataset: { qid: q.id, kind: q.kind } }, part, body);
 }
 
 function readAnswers(set) {
@@ -115,7 +255,13 @@ function render(set, members) {
   const sheet = el('ol', { attrs: { id: 'sheet' } }, set.questions.map(buildQuestion));
   const status = el('p', { attrs: { id: 'status', role: 'status' } });
   const submit = el('button', { class: 'button', text: '답안 제출', attrs: { id: 'submit', type: 'button' } });
-  const block = el('div', { class: 'submit-block' }, submit, status);
+  const block = el(
+    'div',
+    { class: 'submit-block' },
+    submit,
+    el('div', { class: 'stub-text' }, el('p', { class: 'stub-note', text: '제출하면 첫 시도 답이 고정돼요.' }), status),
+    plate('census', 'sheet-plate--right sheet-plate--stub'),
+  );
 
   const savedName = (store.get('member') || {}).name;
   const select = el(
@@ -133,16 +279,42 @@ function render(set, members) {
   );
   if (members.some((m) => m.name === savedName)) select.value = savedName;
 
+  const concept = set.questions.filter((q) => q.kind !== 'code').length;
+  const code = set.questions.length - concept;
+  const from = monthDay(set.range && set.range.from);
+  const to = monthDay(set.range && set.range.to);
+  const field = (term, ...value) => el('div', { class: 'field' }, el('dt', {}, term), el('dd', {}, value));
+  const fields = el(
+    'dl',
+    { class: 'sheet-fields', attrs: { 'data-reveal': 'load' } },
+    members.length ? el('div', { class: 'field field--name' }, el('dt', {}, el('label', { text: '성명', attrs: { for: 'sheet-member' } })), el('dd', {}, select)) : null,
+    from && to ? field('범위', `${from}–${to}`) : null,
+    field('문항', `${set.questions.length}문제 · 개념 ${concept} · 코드 분석 ${code}`),
+    field('예상 시간', `약 ${set.estimatedMinutes}분`),
+  );
   const head = el(
     'header',
     { class: 'sheet-head' },
-    el('h1', { text: set.title, attrs: { id: 'sheet-title' } }),
-    el('p', { class: 'sheet-meta', text: `${set.questions.length}문제 · 약 ${set.estimatedMinutes}분` }),
-    members.length ? el('div', { class: 'sheet-name' }, el('label', { text: '성명', attrs: { for: 'sheet-member' } }), select) : null,
+    el('h1', { text: set.title, attrs: { id: 'sheet-title', 'data-reveal': 'load' } }),
+    fields,
+    plate('card', 'sheet-plate--head'),
   );
 
-  const paper = el('article', { class: 'paper' }, head, sheet, block);
+  // Ground plates hang in the margin beside a question; each is the last child of that question's item.
+  const shown = ['card'];
+  for (const gp of GROUND_PLATES) {
+    const host = gp.at === 'head' ? head : sheet.children[gp.at];
+    if (!host) continue;
+    host.append(plate(gp.key, `sheet-plate--${gp.side}${gp.drift ? ' sheet-plate--drift' : ''}${gp.tall ? ' plate--tall sheet-plate--hero' : ''}`));
+    shown.push(gp.key);
+  }
+  shown.push('census');
+
+  const paper = el('article', { class: 'paper' }, head, sheet, block, creditsFor(shown));
   app.replaceChildren(paper);
+  stagger(head, '[data-reveal]');
+  stagger(sheet, 'li.q:nth-child(-n+3)');
+  reveal(paper);
 
   const saved = store.get('attempt:' + set.id);
   if (saved) {
