@@ -119,6 +119,29 @@
   cursor: default;
 }
 
+/* Quiet lines under the exam fields. The storage notice is a filled note on the paper: no outline, no shadow, no icon. */
+.sheet-notes {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.save-line {
+  min-height: 1.5em;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+#storage-notice {
+  margin: 0;
+  padding: 12px 18px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
 /* ---------- questions: a real ordered list, the number is the native marker in the margin column ---------- */
 
 #sheet {
@@ -461,10 +484,6 @@ pre.code code {
   font-variant-numeric: tabular-nums;
 }
 
-#storage-notice {
-  margin-top: 16px;
-}
-
 /* Focus lands here programmatically after grading; the heading is not a control, so no ring. */
 #score-heading:focus {
   outline: none;
@@ -526,6 +545,11 @@ pre.code code {
   .sheet-fields {
     grid-column: 1;
     grid-row: 2;
+  }
+
+  .sheet-notes {
+    grid-column: 1;
+    grid-row: 3;
   }
 
   .opts--grid {

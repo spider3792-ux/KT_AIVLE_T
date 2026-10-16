@@ -250,6 +250,70 @@ function focusFromHash() {
   li.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
 }
 
+// Draft autosave and restore (QUIZ-03). Only runs while the set has no frozen attempt.
+function setupDraft(set, paper, select, sheet, { saveState, showStorageNotice }) {
+  const key = 'draft:' + set.id;
+  let timer = null;
+  let dirty = false;
+  let active = true;
+
+  // Restore: stored data is untrusted, so only what sanitizeAnswers keeps ever reaches a control.
+  const saved = store.get(key);
+  const restored = sanitizeAnswers(set, saved && saved.answers);
+  for (const q of set.questions) {
+    if (!Object.prototype.hasOwnProperty.call(restored, q.id)) continue;
+    if (q.type === 'choice') {
+      const radio = sheet.querySelector(`input[type="radio"][name="${q.id}"][value="${restored[q.id]}"]`);
+      if (radio) radio.checked = true;
+    } else {
+      const input = document.getElementById(`${q.id}-a`);
+      if (input) input.value = restored[q.id];
+    }
+  }
+  if (saved && typeof saved.member === 'string' && [...select.options].some((o) => o.value === saved.member && o.value !== '')) {
+    select.value = saved.member;
+  }
+
+  // HH:MM, 24-hour (en-GB gives that shape on every browser)
+  const clock = () => new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+  // Reads the live controls at the moment of saving, so a Hangul syllable still being composed is whatever the field holds right now.
+  function save() {
+    if (!active) return;
+    clearTimeout(timer);
+    timer = null;
+    dirty = false;
+    const ok = store.set(key, { member: select.value || null, answers: readAnswers(set), updatedAt: new Date().toISOString() });
+    if (ok) saveState.textContent = `자동 저장됨 · ${clock()}`;
+    else showStorageNotice();
+  }
+
+  function later() {
+    if (!active) return;
+    dirty = true;
+    clearTimeout(timer);
+    timer = setTimeout(save, 300);
+  }
+
+  paper.addEventListener('input', later);
+  paper.addEventListener('change', save);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && dirty) save();
+  });
+  window.addEventListener('pagehide', () => {
+    if (dirty) save();
+  });
+
+  return {
+    stop() {
+      active = false;
+      clearTimeout(timer);
+      store.remove(key);
+      saveState.textContent = '';
+    },
+  };
+}
+
 function render(set, members) {
   document.title = `${set.title} · 스터디 복습 퀴즈`;
   const sheet = el('ol', { attrs: { id: 'sheet' } }, set.questions.map(buildQuestion));
@@ -279,6 +343,16 @@ function render(set, members) {
   );
   if (members.some((m) => m.name === savedName)) select.value = savedName;
 
+  // Quiet lines under the exam fields: when the draft was last kept, and (only if needed) that nothing is kept.
+  const notes = el('div', { class: 'sheet-notes' });
+  const saveState = el('span', { attrs: { id: 'save-state' } });
+  const showStorageNotice = () => {
+    if (document.getElementById('storage-notice')) return;
+    notes.append(el('p', { text: '이 브라우저에서는 답이 저장되지 않아요. 창을 닫으면 사라져요.', attrs: { id: 'storage-notice' } }));
+  };
+  notes.append(el('p', { class: 'save-line' }, saveState));
+  if (!store.persistent) showStorageNotice();
+
   const concept = set.questions.filter((q) => q.kind !== 'code').length;
   const code = set.questions.length - concept;
   const from = monthDay(set.range && set.range.from);
@@ -297,6 +371,7 @@ function render(set, members) {
     { class: 'sheet-head' },
     el('h1', { text: set.title, attrs: { id: 'sheet-title', 'data-reveal': 'load' } }),
     fields,
+    notes,
     plate('card', 'sheet-plate--head'),
   );
 
@@ -323,6 +398,7 @@ function render(set, members) {
     return;
   }
 
+  const draft = setupDraft(set, paper, select, sheet, { saveState, showStorageNotice });
   focusFromHash();
   window.addEventListener('hashchange', focusFromHash);
 
@@ -350,6 +426,7 @@ function render(set, members) {
       score: graded.score,
     };
     store.set('attempt:' + set.id, attempt);
+    draft.stop(); // the attempt replaces the draft
     showGraded(set, attempt, { focus: true });
   });
 }
@@ -422,9 +499,6 @@ function showGraded(set, attempt, { focus }) {
     `/${max.code}`,
   );
   const section = el('section', { attrs: { id: 'score' } }, heading, line);
-  if (!store.persistent) {
-    section.append(el('p', { text: '이 브라우저에서는 기록이 저장되지 않아요. 창을 닫으면 사라져요.', attrs: { id: 'storage-notice' } }));
-  }
   document.querySelector('.sheet-head').after(section);
 
   const memberSelect = document.getElementById('sheet-member');

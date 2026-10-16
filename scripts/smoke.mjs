@@ -36,6 +36,7 @@ function makeKit(browser) {
   const index = readJson('quizzes/index.json');
   const kit = {
     BASE,
+    browser,
     assert,
     sleep,
     data: {

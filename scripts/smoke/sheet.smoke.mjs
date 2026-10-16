@@ -133,4 +133,116 @@ export default async function sheet(kit) {
   await kit.sleep(500);
   const hidden = await calm.eval(() => [...document.querySelectorAll('[data-reveal]')].filter((n) => getComputedStyle(n).opacity !== '1').length);
   assert.equal(hidden, 0, 'every [data-reveal] is at opacity 1 under reduced motion');
+
+  // ---------------------------------------------------------------- (a) draft resume
+  const key = `srq:draft:${set.id}`;
+  const q1 = set.questions.find((q) => q.id === 'q1');
+  const q3 = set.questions.find((q) => q.id === 'q3');
+  assert.equal(q1.type, 'choice');
+  assert.equal(q3.type, 'short');
+  const who = members[1].name;
+  const keep = await kit.open('quiz.html', { width: 1440, height: 900 });
+  await kit.waitFor(keep, () => document.querySelectorAll('li.q').length > 0);
+  await kit.chooseMember(keep, who);
+  await keep.eval(
+    ({ answer }) => {
+      document.querySelector(`input[type="radio"][name="q1"][value="${answer}"]`).click();
+      const input = document.getElementById('q3-a');
+      input.value = 'isna().sum()';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      return true;
+    },
+    { answer: q1.answer },
+  );
+  await kit.sleep(600);
+  const draft = await keep.eval((k) => JSON.parse(localStorage.getItem(k)), key);
+  assert.ok(draft && draft.v === 1, 'draft stored with v: 1');
+  assert.equal(draft.answers.q1, q1.answer);
+  assert.equal(draft.answers.q3, 'isna().sum()');
+  assert.equal(draft.member, who);
+  assert.ok(!Number.isNaN(Date.parse(draft.updatedAt)), 'updatedAt is an ISO date');
+
+  await kit.reload(keep);
+  await kit.waitFor(keep, () => document.querySelectorAll('li.q').length > 0);
+  const back = await keep.eval(
+    ({ answer }) => ({
+      checked: document.querySelector(`input[type="radio"][name="q1"][value="${answer}"]`).checked,
+      count: document.querySelectorAll('input[type="radio"][name="q1"]:checked').length,
+      typed: document.getElementById('q3-a').value,
+      member: document.querySelector('select#sheet-member').value,
+    }),
+    { answer: q1.answer },
+  );
+  assert.equal(back.checked, true, 'q1 radio is checked again');
+  assert.equal(back.count, 1);
+  assert.equal(back.typed, 'isna().sum()');
+  assert.equal(back.member, who);
+  await keep.eval(() => {
+    const input = document.getElementById('q6-a');
+    input.value = '데이터 누수';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    return true;
+  });
+  await kit.waitFor(keep, () => /^자동 저장됨 · [0-9]{2}:[0-9]{2}$/.test(document.querySelector('#save-state').textContent));
+
+  // A submitted sheet drops its draft and keeps only the frozen attempt.
+  await kit.submitSheet(keep);
+  await kit.waitFor(keep, () => document.querySelector('#score'));
+  const afterSubmit = await keep.eval((k) => localStorage.getItem(k), key);
+  assert.equal(afterSubmit, null, 'draft removed once the attempt is stored');
+
+  // ---------------------------------------------------------------- (b) tampered draft
+  const bad = await kit.open('quiz.html', { width: 1440, height: 900 });
+  await bad.eval(
+    (k) => {
+      localStorage.setItem(k, JSON.stringify({ v: 1, member: 'not a member', answers: { q1: 9, q2: 'x', q99: 1, q3: 'a'.repeat(300) }, updatedAt: 'x' }));
+      return true;
+    },
+    key,
+  );
+  await kit.reload(bad);
+  await kit.waitFor(bad, () => document.querySelectorAll('li.q').length > 0);
+  const tampered = await bad.eval(() => ({
+    q1: document.querySelectorAll('input[type="radio"][name="q1"]:checked').length,
+    q2: document.querySelectorAll('input[type="radio"][name="q2"]:checked').length,
+    q3: document.getElementById('q3-a').value,
+    member: document.querySelector('select#sheet-member').value,
+    items: document.querySelectorAll('li.q').length,
+  }));
+  assert.equal(tampered.q1, 0, 'out-of-range q1 is dropped');
+  assert.equal(tampered.q2, 0, 'a string for a choice question is dropped');
+  assert.equal(tampered.q3, '', 'a 300-character answer is dropped');
+  assert.equal(tampered.member, '', 'an unknown name is dropped');
+  assert.equal(tampered.items, 10);
+
+  // ---------------------------------------------------------------- (c) storage that throws
+  const blocked = await kit.browser.newPage({ width: 1440, height: 900 });
+  kit.opened.push(blocked);
+  await blocked.send('Page.addScriptToEvaluateOnNewDocument', {
+    source: `Object.defineProperty(window, 'localStorage', { configurable: true, get() { throw new DOMException('denied', 'SecurityError'); } });`,
+  });
+  await blocked.goto(`${kit.BASE}/quiz.html`, { settleMs: 600 });
+  await kit.waitFor(blocked, () => document.querySelectorAll('li.q').length > 0);
+  const note = await blocked.eval(() => {
+    const n = document.querySelector('#storage-notice');
+    const r = n ? n.getBoundingClientRect() : null;
+    return { text: n ? n.textContent : '', visible: !!r && r.width > 0 && r.height > 0 && getComputedStyle(n).visibility !== 'hidden', cs: getComputedStyle(n).color };
+  });
+  assert.equal(note.text, '이 브라우저에서는 답이 저장되지 않아요. 창을 닫으면 사라져요.');
+  assert.ok(note.visible, '#storage-notice is visible');
+  await kit.answerAll(blocked, set, 'correct');
+  await kit.sleep(500);
+  const still = await blocked.eval(() => ({
+    items: document.querySelectorAll('li.q').length,
+    checked: document.querySelectorAll('input[type="radio"]:checked').length,
+    typed: document.getElementById('q3-a').value,
+  }));
+  assert.equal(still.items, 10);
+  assert.ok(still.checked >= 5, 'answering still works with storage blocked');
+  assert.ok(still.typed.length > 0);
+  await kit.chooseMember(blocked, members[0].name);
+  await kit.submitSheet(blocked);
+  await kit.waitFor(blocked, () => document.querySelector('[data-score="total"]'));
+  assert.equal(await blocked.eval(() => document.querySelector('[data-score="total"]').textContent), '10', 'grading works with storage blocked');
+  assert.deepEqual(blocked.consoleErrors, [], 'no page exceptions with blocked storage');
 }
