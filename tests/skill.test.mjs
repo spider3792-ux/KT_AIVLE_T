@@ -113,3 +113,85 @@ test('gate command form: a draft named set.json passes with --sources', () => {
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /^통과:/m);
 });
+
+// ---------------------------------------------------------------- SKILL.md
+
+const SKILL_PATH = `${SKILL_DIR}/SKILL.md`;
+const SKILL = read(SKILL_PATH);
+const fm = SKILL.match(/^---\n([\s\S]*?)\n---\n/);
+const FRONT = fm[1];
+const BODY = SKILL.slice(fm[0].length);
+const DESC = FRONT.match(/description:\s*>-?\n((?:[ \t]+.*\n?)+)/)[1]
+  .split('\n').map((s) => s.trim()).join(' ').trim();
+
+const headings = [...BODY.matchAll(/^## (.*)$/gm)].map((m) => ({ title: m[1], at: m.index }));
+function section(prefix) {
+  const i = headings.findIndex((h) => h.title.startsWith(prefix));
+  assert.ok(i >= 0, `no section "${prefix}"`);
+  return BODY.slice(headings[i].at, i + 1 < headings.length ? headings[i + 1].at : undefined);
+}
+const step = (n) => section(`${n}단계`);
+
+test('SKILL.md frontmatter: name, description length, the three triggers, body length', () => {
+  assert.match(FRONT, /^name:\s*weekly-quiz\s*$/m);
+  assert.ok([...DESC].length <= 1024, `description is ${[...DESC].length} characters`);
+  for (const t of ['이번 주 퀴즈 만들어 줘', '퀴즈 출제', '주간 문제 만들기']) {
+    assert.ok(DESC.includes(t), `description lacks "${t}"`);
+  }
+  assert.ok(BODY.split('\n').length < 300);
+  assert.deepEqual(FRONT.split('\n').filter((l) => /^[A-Za-z-]+:/.test(l)).map((l) => l.split(':')[0]), ['name', 'description']);
+});
+
+test('SKILL.md links the rubric and names the fixture that exist', () => {
+  assert.ok(SKILL.includes('(rubric.md)'));
+  assert.ok(existsSync(`${SKILL_DIR}/rubric.md`));
+  assert.ok(step(4).includes('tests/fixtures/worked-example/'));
+  assert.ok(existsSync(`${EX}/records.json`));
+});
+
+test('headings 1단계..10단계 exist in numeric order', () => {
+  const nums = headings.map((h) => h.title.match(/^(\d+)단계/)).filter(Boolean).map((m) => Number(m[1]));
+  assert.deepEqual(nums, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  assert.ok(headings.some((h) => h.title.startsWith('원칙')));
+});
+
+const REQUIRED = {
+  원칙: ['커밋', '푸시', '금지', 'index.json', 'work/', '지시', '실행하지'],
+  '1단계': ['node scripts/week.mjs --json', '주차 id'],
+  '2단계': ['풀어', '붙여', '커넥터'],
+  '3단계': ['리스트', '# 여기에 코드', '(스터디 때 팀원 의견을 여기에 남겨요)', '작성 양식', '직전 세트'],
+  '4단계': ['work/<id>/records.json', 'members.json', 'codeBlocks'],
+  '5단계': ['입고 보고', '6개', '3명', '진행', '범위 넓히기', '중단', '코드 블록'],
+  '6단계': ['.py', '.ipynb', '.csv', '.xlsx', 'CSV UTF-8', 'file'],
+  '7단계': ['(rubric.md)', 'work/<id>/set.json'],
+  '8단계': ['node scripts/validate-quiz.mjs work/<id>/set.json --sources work/<id>/records.json', '5'],
+  '9단계': ['블라인드'],
+  '10단계': ['quizzes/<id>.json', '교체', '다른 id', '중단', 'index.json'],
+};
+for (const [key, literals] of Object.entries(REQUIRED)) {
+  test(`SKILL.md ${key} holds its required literals`, () => {
+    const text = key === '원칙' ? section('원칙') : step(key.replace('단계', ''));
+    for (const lit of literals) assert.ok(text.includes(lit), `${key} lacks "${lit}"`);
+  });
+}
+
+test('SKILL.md prohibitions: git writes are forbidden, index.json is not edited', () => {
+  const lines = SKILL.split('\n');
+  for (const l of lines.filter((x) => /\bgit\s+(add|commit|push)\b/.test(x))) {
+    assert.ok(l.includes('금지'), `git write command without 금지: ${l}`);
+  }
+  assert.ok(lines.some((l) => l.includes('커밋') && l.includes('푸시') && l.includes('금지')));
+  for (const l of section('원칙').split('\n').filter((x) => x.includes('index.json'))) {
+    assert.ok(/수정하지|건드리지|금지/.test(l), `index.json line lacks a prohibition: ${l}`);
+  }
+});
+
+test('SKILL.md order: the intake report sits between step 4 and step 7', () => {
+  const at = BODY.indexOf('### 입고 보고');
+  assert.ok(at > BODY.indexOf('## 4단계'));
+  assert.ok(at < BODY.indexOf('## 7단계'));
+});
+
+test('the skill folder holds only SKILL.md and rubric.md', () => {
+  assert.deepEqual(readdirSync(SKILL_DIR).sort(), ['SKILL.md', 'rubric.md']);
+});
