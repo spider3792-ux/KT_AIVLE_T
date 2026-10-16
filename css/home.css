@@ -115,7 +115,7 @@
   background: var(--band-c);
   color: var(--tab-ink);
   font-size: var(--tab-size);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
@@ -297,27 +297,91 @@
   margin-top: 16px;
 }
 
-/* ---------- preview frame ---------- */
+/* ---------- preview frame ----------
+   One fixed frame: a subject plate on the left, the pointed-at member's entries on the right. */
 
 .preview {
+  display: grid;
   grid-area: preview;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 24px;
   align-self: start;
-  height: 300px;
+  height: 280px;
   padding: 20px;
   overflow: hidden;
   background: var(--surface);
   color: var(--ink);
 }
 
+.preview-plate {
+  align-self: start;
+  background: var(--bg);
+}
+
+.preview-plate img {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--t-ui) ease;
+}
+
+.preview-plate img.is-on {
+  opacity: 1;
+}
+
+.preview-body {
+  min-width: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 .preview-idle {
-  max-width: 30ch;
+  max-width: 24ch;
   font-size: var(--step-body);
   line-height: 1.5;
+}
+
+.preview-name {
+  font-size: clamp(1.5rem, 1.2rem + 0.8vw, 1.875rem);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.preview-total {
+  margin-top: 6px;
+  font-size: 1.0625rem;
+}
+
+.preview-list {
+  display: grid;
+  gap: 14px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entry {
+  min-width: 0;
+}
+
+.entry p {
+  font-size: 1.0625rem;
+  line-height: 1.45;
+}
+
+.entry-title {
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
 /* ---------- tablet and phone: one column, the frame opens above the name picker ---------- */
 
 @media (max-width: 899px) {
+  .hero {
+    min-height: 0;
+    padding-bottom: 72px;
+  }
+
   .folder {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
@@ -328,8 +392,17 @@
     padding: 24px var(--gutter) 32px;
   }
 
+  .preview-body {
+    max-height: 328px;
+  }
+
   .preview {
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 16px;
+    height: auto;
+    max-height: 360px;
     margin-bottom: 24px;
+    padding: 16px;
   }
 
   .preview[data-state="idle"] {
@@ -351,6 +424,7 @@
   .hero {
     min-height: calc(48svh - var(--tab-h) - var(--top-h));
     padding-top: 40px;
+    padding-bottom: 0;
   }
 
   .hero h1 {
@@ -394,7 +468,8 @@
 @media (prefers-reduced-motion: reduce) {
   .tab,
   .member span,
-  .member span::before {
+  .member span::before,
+  .preview-plate img {
     transition: none;
   }
 
