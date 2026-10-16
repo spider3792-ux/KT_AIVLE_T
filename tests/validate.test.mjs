@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { validateSet, memberNames } from '../scripts/lib/validate-core.mjs';
+import { validateSet, validateIndex, memberNames, parseRecords, checkAgainstRecords } from '../scripts/lib/validate-core.mjs';
 
 const read = (rel) => JSON.parse(readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8'));
 const sample = read('quizzes/2026-W42.json');
@@ -306,4 +306,134 @@ test('every problem is collected, not just the first', () => {
   q(s, 'q2').answer = 9;
   const r = run(s);
   assert.ok(r.errors.length >= 3, `got ${r.errors.length}`);
+});
+
+// ---- week list ----
+
+const goodIndex = () => [
+  { id: '2026-W43', title: '10월 넷째 주 시험지', published: '2026-10-23', file: 'quizzes/2026-W43.json' },
+  { id: '2026-W42', title: '10월 셋째 주 시험지', published: '2026-10-16', file: 'quizzes/2026-W42.json' },
+];
+const indexCtx = (over = {}) => ({
+  listQuizFiles: () => ['2026-W42.json', '2026-W43.json', 'index.json'],
+  readSet: (file) => ({ id: file.replace(/^quizzes\//, '').replace(/\.json$/, '') }),
+  ...over,
+});
+
+test('index: the real quizzes/index.json is clean with the real file list', () => {
+  const idx = read('quizzes/index.json');
+  const r = validateIndex(idx, {
+    listQuizFiles: () => ['2026-W42.json', 'index.json'],
+    readSet: (f) => read(f),
+  });
+  assert.deepEqual(r.errors, []);
+});
+
+test('index: good list passes', () => {
+  assert.deepEqual(validateIndex(goodIndex(), indexCtx()).errors, []);
+});
+
+test('index: empty or not an array', () => {
+  expectError(validateIndex([], indexCtx()), '주차 목록이 비어 있습니다');
+  expectError(validateIndex({}, indexCtx()), '주차 목록');
+});
+
+test('index: unsorted list', () => {
+  expectError(validateIndex(goodIndex().reverse(), indexCtx()), '주차 목록은 최신순이어야 합니다');
+});
+
+test('index: tie on published sorts by id descending', () => {
+  const a = goodIndex();
+  a[0].published = '2026-10-16';
+  assert.deepEqual(validateIndex(a, indexCtx()).errors, []);
+  expectError(validateIndex(a.reverse(), indexCtx()), '주차 목록은 최신순이어야 합니다');
+});
+
+test('index: wrong file path', () => {
+  const a = goodIndex();
+  a[1].file = 'quizzes/week42.json';
+  expectError(validateIndex(a, indexCtx()), 'file은 quizzes/ID.json이어야 합니다', 'index[1]');
+});
+
+test('index: file name with the wrong letter case does not count as existing', () => {
+  const r = validateIndex(goodIndex(), indexCtx({ listQuizFiles: () => ['2026-w42.json', '2026-W43.json'] }));
+  expectError(r, '파일이 없습니다 (대소문자까지 같아야 합니다): quizzes/2026-W42.json', 'index[1]');
+});
+
+test('index: set id differs from the entry id', () => {
+  const r = validateIndex(goodIndex(), indexCtx({ readSet: () => ({ id: '2026-W40' }) }));
+  expectError(r, '주차 파일의 id', 'index[0]');
+});
+
+test('index: entry fields and duplicates', () => {
+  let a = goodIndex();
+  a[0].published = '2026-13-40';
+  expectError(validateIndex(a, indexCtx()), '날짜 형식이 올바르지 않습니다', 'index[0]');
+  a = goodIndex();
+  a[1].id = '2026-W43';
+  a[1].file = 'quizzes/2026-W43.json';
+  expectError(validateIndex(a, indexCtx()), 'id가 겹칩니다', 'index[1]');
+  a = goodIndex();
+  delete a[0].title;
+  expectError(validateIndex(a, indexCtx()), 'title', 'index[0]');
+  a = goodIndex();
+  a[0].id = 'W43';
+  expectError(validateIndex(a, indexCtx()), 'id', 'index[0]');
+});
+
+// ---- --sources: input records ----
+
+const records = () => read('tests/fixtures/records-2026-W42.json');
+
+test('parseRecords: the fixture parses into a Map by id', () => {
+  const m = parseRecords(records());
+  assert.ok(m instanceof Map);
+  assert.equal(m.size, 6);
+  assert.equal(m.get('s1').author, '김준수');
+});
+
+test('parseRecords: wrong shapes are reported with the Korean stem', () => {
+  for (const bad of [null, [], {}, { records: 'x' }, { records: [3] }, { records: [{ id: 's1' }] }, { records: [{ id: 's1', author: 'a', date: 'd', codeBlocks: 'x' }] }]) {
+    assert.throws(() => parseRecords(bad), /입력 기록 파일 형식이 올바르지 않습니다/);
+  }
+  const dup = { records: [{ id: 's1', author: 'a', date: 'd' }, { id: 's1', author: 'a', date: 'd' }] };
+  assert.throws(() => parseRecords(dup), /겹칩니다/);
+});
+
+test('checkAgainstRecords: the sample matches its records', () => {
+  const r = checkAgainstRecords(sample, parseRecords(records()));
+  assert.deepEqual(r.errors, []);
+});
+
+test('checkAgainstRecords: source missing from the records', () => {
+  const rec = records();
+  rec.records = rec.records.filter((x) => x.id !== 's4');
+  expectError(checkAgainstRecords(sample, parseRecords(rec)), '출처 s4가 입력 기록 목록에 없습니다', 'sources[3] (s4)');
+});
+
+test('checkAgainstRecords: author or date differs', () => {
+  const rec = records();
+  rec.records.find((x) => x.id === 's2').date = '2026-10-15';
+  expectError(checkAgainstRecords(sample, parseRecords(rec)), '출처 s2의 작성자·날짜가 입력 기록과 다릅니다', 'sources[1] (s2)');
+});
+
+test('checkAgainstRecords: practice file not in any record', () => {
+  const rec = records();
+  for (const r of rec.records) r.files = [];
+  expectError(checkAgainstRecords(sample, parseRecords(rec)), '실습 파일 sales.csv가 입력 기록에 없습니다', '(q8)');
+});
+
+test('checkAgainstRecords: code that differs by one space is rejected', () => {
+  const rec = records();
+  const s1 = rec.records.find((x) => x.id === 's1');
+  s1.codeBlocks = s1.codeBlocks.map((b) => b.replace('    df.groupby', '     df.groupby'));
+  expectError(checkAgainstRecords(sample, parseRecords(rec)), '코드가 입력 기록 원문과 일치하지 않습니다 (q8)', '(q8)');
+});
+
+test('checkAgainstRecords: CRLF in the record and one trailing newline are tolerated', () => {
+  const rec = records();
+  for (const r of rec.records) r.codeBlocks = r.codeBlocks.map((b) => b.replace(/\n/g, '\r\n'));
+  const set = clone();
+  q(set, 'q8').code += '\n';
+  assert.deepEqual(checkAgainstRecords(set, parseRecords(rec)).errors, []);
 });

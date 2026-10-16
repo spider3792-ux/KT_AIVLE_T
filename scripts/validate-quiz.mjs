@@ -1,10 +1,11 @@
 // Thin CLI over scripts/lib/validate-core.mjs.
 //   node scripts/validate-quiz.mjs <file> [--sources <records.json>] [--members <members.json>] [--strict]
+// The basename index.json is checked as the week list; any other file as one week's set.
 // Exit 0 ok, 1 validation errors (or warnings with --strict), 2 usage / unreadable file / invalid JSON.
-import { existsSync, readFileSync } from 'node:fs';
-import { basename, resolve } from 'node:path';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { memberNames, validateSet } from './lib/validate-core.mjs';
+import { checkAgainstRecords, memberNames, parseRecords, validateIndex, validateSet } from './lib/validate-core.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
@@ -57,41 +58,66 @@ function parseArgs(argv) {
   return opts;
 }
 
+// Prints problems to stderr and the pass line to stdout; returns the exit code.
+function report(opts, result, summary, notes) {
+  const { errors, warnings } = result;
+  if (errors.length) console.error(errors.map((e) => `오류 ${e.path}: ${e.message}`).join('\n'));
+  if (warnings.length) console.error(warnings.map((w) => `경고 ${w.path}: ${w.message}`).join('\n'));
+  const failed = errors.length > 0 || (opts.strict && warnings.length > 0);
+  if (failed) {
+    console.error(`실패: ${opts.file} · 오류 ${errors.length}개 · 경고 ${warnings.length}개`);
+    return 1;
+  }
+  console.log(summary);
+  if (warnings.length) console.log(`경고 ${warnings.length}개 (위 stderr 참고)`);
+  for (const n of notes) console.log(n);
+  return 0;
+}
+
 function main(argv) {
   const opts = parseArgs(argv);
-  const set = readJson(opts.file);
+  const data = readJson(opts.file);
+
+  if (basename(opts.file).toLowerCase() === 'index.json') {
+    const dir = dirname(resolve(opts.file));
+    // readdirSync gives exact-case names; Windows existsSync ignores case, GitHub Pages does not.
+    const result = validateIndex(data, {
+      listQuizFiles: () => readdirSync(dir),
+      readSet: (file) => readJson(resolve(dir, basename(file))),
+    });
+    const n = Array.isArray(data) ? data.length : 0;
+    return report(opts, result, `통과: 주차 ${n}개`, []);
+  }
 
   let members;
   const membersPath = opts.members ?? resolve(ROOT, 'members.json');
   if (opts.members !== null || existsSync(membersPath)) members = memberNames(readJson(membersPath));
 
   const fileBase = basename(opts.file).replace(/\.json$/i, '');
-  const result = validateSet(set, { fileBase, members });
-
-  const errors = [...result.errors];
-  const warnings = [...result.warnings];
+  const result = validateSet(data, { fileBase, members });
   const notes = [];
-  notes.push('참고: --sources 없이 검사해서 입력 기록 대조는 건너뛰었어요');
 
-  const errLines = errors.map((e) => `오류 ${e.path}: ${e.message}`);
-  const warnLines = warnings.map((w) => `경고 ${w.path}: ${w.message}`);
-  if (errLines.length) console.error(errLines.join('\n'));
-  if (warnLines.length) console.error(warnLines.join('\n'));
-
-  const failed = errors.length > 0 || (opts.strict && warnings.length > 0);
-  if (failed) {
-    console.error(`실패: ${opts.file} · 오류 ${errors.length}개 · 경고 ${warnings.length}개`);
-    return 1;
+  if (opts.sources !== null) {
+    const raw = readJson(opts.sources);
+    let records;
+    try {
+      records = parseRecords(raw);
+    } catch (err) {
+      throw new Exit(2, `${err.message}: ${opts.sources}`);
+    }
+    const extra = checkAgainstRecords(data, records);
+    result.errors.push(...extra.errors);
+    result.warnings.push(...extra.warnings);
+  } else {
+    notes.push('참고: --sources 없이 검사해서 입력 기록 대조는 건너뛰었어요');
   }
 
-  const qs = Array.isArray(set.questions) ? set.questions : [];
-  const concept = qs.filter((q) => q.kind === 'concept').length;
-  const code = qs.filter((q) => q.kind === 'code').length;
-  const sources = Array.isArray(set.sources) ? set.sources.length : 0;
-  console.log(`통과: ${opts.file} · ${qs.length}문제 (개념 ${concept} · 코드 분석 ${code}) · 출처 ${sources}개`);
-  if (warnings.length) console.log(`경고 ${warnings.length}개 (위 stderr 참고)`);
-  for (const n of notes) console.log(n);
-  return 0;
+  const qs = Array.isArray(data && data.questions) ? data.questions : [];
+  const concept = qs.filter((q) => q && q.kind === 'concept').length;
+  const code = qs.filter((q) => q && q.kind === 'code').length;
+  const sources = Array.isArray(data && data.sources) ? data.sources.length : 0;
+  const summary = `통과: ${opts.file} · ${qs.length}문제 (개념 ${concept} · 코드 분석 ${code}) · 출처 ${sources}개`;
+  return report(opts, result, summary, notes);
 }
 
 try {

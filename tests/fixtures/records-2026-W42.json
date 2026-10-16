@@ -1,0 +1,72 @@
+{
+  "records": [
+    {
+      "id": "s1",
+      "author": "김준수",
+      "date": "2026-10-13",
+      "title": "groupby로 월별 매출 집계하기",
+      "subject": "Pandas",
+      "codeBlocks": [
+        "import pandas as pd\n\ndf = pd.read_csv(\"sales.csv\", parse_dates=[\"날짜\"])\n\n# 월별 매출 집계\nmonthly = (\n    df.groupby(df[\"날짜\"].dt.to_period(\"M\"))[\"매출\"]\n    .sum()\n    .reset_index()\n)\nprint(monthly.head())\n\n# 다음에는 결과를 그래프로 그려 보기\n"
+      ],
+      "files": [
+        "sales.csv"
+      ]
+    },
+    {
+      "id": "s2",
+      "author": "이주현",
+      "date": "2026-10-14",
+      "title": "merge와 결측치 확인 정리",
+      "subject": "Pandas",
+      "codeBlocks": [
+        "merged = df_a.merge(df_b, on=\"id\", how=\"left\")\nprint(merged.isna().sum())\n"
+      ],
+      "files": []
+    },
+    {
+      "id": "s3",
+      "author": "차승환",
+      "date": "2026-10-14",
+      "title": "matplotlib 객체 지향 방식 정리",
+      "subject": "데이터 시각화",
+      "codeBlocks": [
+        "fig, ax = plt.subplots(figsize=(8, 4))\nax.plot(x, y)\nax.set_title(\"월별 매출\")\nplt.show()\n"
+      ],
+      "files": []
+    },
+    {
+      "id": "s4",
+      "author": "스터디원 4",
+      "date": "2026-10-15",
+      "title": "seaborn으로 분포 비교하기",
+      "subject": "데이터 시각화",
+      "codeBlocks": [
+        "sns.boxplot(data=df, x=\"지역\", y=\"매출\")\n"
+      ],
+      "files": []
+    },
+    {
+      "id": "s5",
+      "author": "스터디원 5",
+      "date": "2026-10-15",
+      "title": "나이 결측치 채우기와 분석 흐름 정리",
+      "subject": "데이터 분석",
+      "codeBlocks": [
+        "# 결측치 처리\ndf[\"나이\"] = df[\"나이\"].fillna(\n    df[\"나이\"].median()\n)\nprint(df[\"나이\"].isna().sum())\n"
+      ],
+      "files": []
+    },
+    {
+      "id": "s6",
+      "author": "스터디원 6",
+      "date": "2026-10-16",
+      "title": "타이타닉 분류 모델과 평가 지표",
+      "subject": "머신러닝",
+      "codeBlocks": [
+        "from sklearn.preprocessing import StandardScaler\nfrom sklearn.model_selection import train_test_split\n\nscaler = StandardScaler()\nX_scaled = scaler.fit_transform(X)\nX_train, X_test, y_train, y_test = train_test_split(\n    X_scaled, y, test_size=0.2, random_state=42\n)\nmodel.fit(X_train, y_train)\n\nprint(model.score(X_test, y_test))\n"
+      ],
+      "files": []
+    }
+  ]
+}

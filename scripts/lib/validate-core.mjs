@@ -257,3 +257,148 @@ export function validateSet(set, ctx = {}) {
 
   return { errors: out.errors, warnings: out.warnings };
 }
+
+// ---- week list (quizzes/index.json) ----
+
+// ctx = { listQuizFiles() -> string[] (exact-case file names in quizzes/), readSet(file) -> parsed set }
+// listQuizFiles comes from readdirSync: Windows existsSync ignores case, GitHub Pages does not.
+export function validateIndex(index, ctx = {}) {
+  const out = collector();
+  const { error } = out;
+
+  if (!Array.isArray(index)) {
+    error('(목록)', '주차 목록은 배열이어야 합니다');
+    return { errors: out.errors, warnings: out.warnings };
+  }
+  if (index.length === 0) {
+    error('(목록)', '주차 목록이 비어 있습니다');
+    return { errors: out.errors, warnings: out.warnings };
+  }
+
+  const names = typeof ctx.listQuizFiles === 'function' ? new Set(ctx.listQuizFiles()) : null;
+  const seen = new Set();
+
+  index.forEach((e, i) => {
+    const label = isObj(e) && typeof e.id === 'string' ? `index[${i}] (${e.id})` : `index[${i}]`;
+    if (!isObj(e)) {
+      error(label, '주차 항목은 객체여야 합니다');
+      return;
+    }
+    const idOk = typeof e.id === 'string' && WEEK_ID.test(e.id);
+    if (!idOk) error(label, `id는 YYYY-Www 형식이어야 합니다 (현재 ${show(e.id)})`);
+    else if (seen.has(e.id)) error(label, `id가 겹칩니다 (${e.id})`);
+    else seen.add(e.id);
+
+    if (!isText(e.title)) error(label, '제목(title)이 비어 있습니다');
+    if (!isRealDate(e.published)) {
+      error(label, `날짜 형식이 올바르지 않습니다 (published, YYYY-MM-DD, 현재 ${show(e.published)})`);
+    }
+
+    const expected = idOk ? `quizzes/${e.id}.json` : null;
+    const fileOk = typeof e.file === 'string' && expected !== null && e.file === expected;
+    if (!fileOk) {
+      error(label, `file은 quizzes/ID.json이어야 합니다 (현재 ${show(e.file)}${expected ? `, 기대 ${expected}` : ''})`);
+    } else if (names) {
+      if (!names.has(`${e.id}.json`)) {
+        error(label, `파일이 없습니다 (대소문자까지 같아야 합니다): ${e.file}`);
+      } else if (typeof ctx.readSet === 'function') {
+        let set;
+        try {
+          set = ctx.readSet(e.file);
+        } catch (err) {
+          error(label, `주차 파일을 읽지 못했어요: ${e.file} (${err && err.message ? err.message : err})`);
+        }
+        if (set !== undefined && (!isObj(set) || set.id !== e.id)) {
+          error(label, `주차 파일의 id가 목록과 다릅니다 (목록 ${e.id}, 파일 ${show(isObj(set) ? set.id : undefined)})`);
+        }
+      }
+    }
+
+    if (i > 0 && isObj(index[i - 1])) {
+      const p = index[i - 1];
+      if (typeof p.published === 'string' && typeof e.published === 'string') {
+        const older = e.published > p.published || (e.published === p.published && String(e.id) > String(p.id));
+        if (older) error(label, '주차 목록은 최신순이어야 합니다 (published 내림차순, 같으면 id 내림차순)');
+      }
+    }
+  });
+
+  return { errors: out.errors, warnings: out.warnings };
+}
+
+// ---- --sources: input records list (the Phase 2 generator writes it) ----
+// Kept in parseRecords / checkAgainstRecords so a later phase can change the record format in one place.
+// { records: [ { id, author, date, title, subject, codeBlocks: [string], files: [string] } ] }
+
+const RECORDS_BAD = '입력 기록 파일 형식이 올바르지 않습니다';
+
+// Returns Map<id, record>. Throws an Error whose message starts with the Korean stem when the shape is wrong.
+export function parseRecords(json) {
+  if (!isObj(json) || !Array.isArray(json.records)) {
+    throw new Error(`${RECORDS_BAD} ({ "records": [ ... ] } 이어야 합니다)`);
+  }
+  const map = new Map();
+  json.records.forEach((r, i) => {
+    const where = `records[${i}]`;
+    if (!isObj(r)) throw new Error(`${RECORDS_BAD} (${where}는 객체여야 합니다)`);
+    for (const k of ['id', 'author', 'date']) {
+      if (!isText(r[k])) throw new Error(`${RECORDS_BAD} (${where}.${k}가 필요합니다)`);
+    }
+    for (const k of ['codeBlocks', 'files']) {
+      if (has(r, k) && !(Array.isArray(r[k]) && r[k].every((x) => typeof x === 'string'))) {
+        throw new Error(`${RECORDS_BAD} (${where}.${k}는 문자열 목록이어야 합니다)`);
+      }
+    }
+    if (map.has(r.id)) throw new Error(`${RECORDS_BAD} (${where}.id가 겹칩니다: ${r.id})`);
+    map.set(r.id, {
+      id: r.id,
+      author: r.author,
+      date: r.date,
+      title: typeof r.title === 'string' ? r.title : '',
+      subject: typeof r.subject === 'string' ? r.subject : '',
+      codeBlocks: has(r, 'codeBlocks') ? [...r.codeBlocks] : [],
+      files: has(r, 'files') ? [...r.files] : [],
+    });
+  });
+  return map;
+}
+
+// CRLF becomes LF and one trailing newline is dropped; every other whitespace stays exactly as written.
+const codeForm = (s) => s.replace(/\r\n/g, '\n').replace(/\n$/, '');
+
+export function checkAgainstRecords(set, records) {
+  const out = collector();
+  const { error } = out;
+  if (!isObj(set) || !(records instanceof Map)) return { errors: out.errors, warnings: out.warnings };
+
+  const sources = Array.isArray(set.sources) ? set.sources : [];
+  sources.forEach((s, i) => {
+    if (!isObj(s) || typeof s.id !== 'string') return;
+    const label = `sources[${i}] (${s.id})`;
+    const rec = records.get(s.id);
+    if (!rec) {
+      error(label, `출처 ${s.id}가 입력 기록 목록에 없습니다`);
+    } else if (rec.author !== s.author || rec.date !== s.date) {
+      error(label, `출처 ${s.id}의 작성자·날짜가 입력 기록과 다릅니다 (세트 ${show(s.author)} ${show(s.date)}, 기록 ${rec.author} ${rec.date})`);
+    }
+  });
+
+  const allFiles = new Set([...records.values()].flatMap((r) => r.files));
+  const questions = Array.isArray(set.questions) ? set.questions : [];
+  questions.forEach((q, i) => {
+    if (!isObj(q)) return;
+    const label = typeof q.id === 'string' ? `questions[${i}] (${q.id})` : `questions[${i}]`;
+    if (isText(q.file) && !allFiles.has(q.file)) {
+      error(label, `실습 파일 ${q.file}가 입력 기록에 없습니다`);
+    }
+    if (q.kind === 'code' && isText(q.code)) {
+      const cited = (Array.isArray(q.sourceIds) ? q.sourceIds : []).map((id) => records.get(id)).filter(Boolean);
+      const pool = cited.length > 0 ? cited : [...records.values()];
+      const want = codeForm(q.code);
+      const found = pool.some((r) => r.codeBlocks.some((b) => codeForm(b).includes(want)));
+      if (!found) error(label, `코드가 입력 기록 원문과 일치하지 않습니다 (${show(q.id)})`);
+    }
+  });
+
+  return { errors: out.errors, warnings: out.warnings };
+}
