@@ -1,10 +1,14 @@
 // Exam sheet controller: render the set, grade on 답안 제출, freeze the first attempt, show it again on reload.
 import { el, loadMembers, loadWeek, renderError, ROOT, store } from './site.js';
-import { correctAnswerText, gradeSet, isBlank, sanitizeAnswers } from './grade.js';
+import { gradeSet, isBlank, sanitizeAnswers } from './grade.js';
 import { reveal, stagger } from './motion.js';
+import { renderResultBlock, renderScore } from './result.js';
 
 const app = document.querySelector('#app');
-const requestedId = new URLSearchParams(location.search).get('set') || '';
+const params = new URLSearchParams(location.search);
+const requestedId = params.get('set') || '';
+// quiz.html?set=ID&review=graded: the graded sheet from a fixed mixed pattern, in memory only (any other value is ignored).
+const review = params.get('review') === 'graded';
 
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -77,6 +81,17 @@ const PLATES = {
     license: 'CC0',
     licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/deed.en/',
   },
+  puncher: {
+    file: 'assets/card-puncher-census.jpg',
+    width: 1280,
+    height: 1008,
+    alt: '1940년경 인구조사국에서 한 여성이 천공기로 조사표의 사실을 카드의 구멍으로 옮기는 흑백 사진.',
+    title: 'This is a card puncher, an integral part of the tabulation system used by the United States Census Bureau…',
+    creator: null,
+    page: 'https://commons.wikimedia.org/wiki/File:This_is_a_card_puncher,_an_integral_part_of_the_tabulation_system_used_by_the_United_States_Census_Bureau_to_compile..._-_NARA_-_513295.jpg',
+    license: 'public domain',
+    licenseUrl: 'https://creativecommons.org/publicdomain/mark/1.0/',
+  },
   census: {
     file: 'assets/census-form-1890.jpg',
     width: 1280,
@@ -98,6 +113,9 @@ const GROUND_PLATES = [
   { key: 'nightingale', at: 6, side: 'left', drift: true },
   { key: 'playfair', at: 8, side: 'right' },
 ];
+
+// Pictures the sheet shows in its taking state; the graded state adds the plate beside the score.
+let shownPlates = [];
 
 function plate(key, extra = '') {
   const p = PLATES[key];
@@ -327,7 +345,8 @@ function render(set, members) {
     plate('census', 'sheet-plate--right sheet-plate--stub'),
   );
 
-  const savedName = (store.get('member') || {}).name;
+  // The design-review view never touches storage, not even to read the remembered name.
+  const savedName = review ? undefined : (store.get('member') || {}).name;
   const select = el(
     'select',
     {
@@ -384,12 +403,20 @@ function render(set, members) {
     shown.push(gp.key);
   }
   shown.push('census');
+  shownPlates = shown;
 
   const paper = el('article', { class: 'paper' }, head, sheet, block, creditsFor(shown));
   app.replaceChildren(paper);
   stagger(head, '[data-reveal]');
   stagger(sheet, 'li.q:nth-child(-n+3)');
   reveal(paper);
+
+  if (review) {
+    const answers = sampleAnswers(set);
+    const graded = gradeSet(set, answers);
+    showGraded(set, { member: null, submittedAt: null, answers, results: graded.results, score: graded.score, sample: true }, { focus: false, animate: true });
+    return;
+  }
 
   const saved = store.get('attempt:' + set.id);
   if (saved) {
@@ -493,57 +520,77 @@ function resolveResults(set, attempt, answers) {
   return { results, score, max: regraded.max };
 }
 
-function showGraded(set, attempt, { focus }) {
+// The fixed mixed pattern of the design-review view: q1, q2, q4, q8 right; q3 right but typed spaced and upper-cased;
+// q5 wrong; q6 blank (absent); q7, q9, q10 wrong.
+function sampleAnswers(set) {
+  const out = {};
+  for (const q of set.questions) {
+    if (q.id === 'q3' && q.type === 'short') out[q.id] = ` ${q.answer[0].toUpperCase().replace('(', '( ')} `;
+    else if (['q1', 'q2', 'q4', 'q8'].includes(q.id)) out[q.id] = q.answer;
+    else if (['q5', 'q7', 'q9', 'q10'].includes(q.id)) out[q.id] = q.type === 'choice' ? (q.answer + 1) % 4 : '오답';
+  }
+  return out;
+}
+
+// Choices: the correct one gets a filled circle, the member's wrong pick a slash; both are also said in words for screen readers.
+function markChoices(li, q, given) {
+  if (q.type !== 'choice') return;
+  li.querySelectorAll('label.opt').forEach((label, index) => {
+    const picked = index === given;
+    const right = index === q.answer;
+    if (right) label.classList.add('is-correct');
+    else if (picked) label.classList.add('is-wrong');
+    if (right || picked) label.append(el('small', { class: 'sr-only', text: [right ? ' (정답)' : '', picked ? ' (내 답)' : ''].join('') }));
+  });
+}
+
+// animate: the sheet has just been graded (or is the review view), so the score and the margin marks come in once.
+function showGraded(set, attempt, { focus, animate = focus }) {
   const answers = sanitizeAnswers(set, attempt.answers);
-  const { results, score, max } = resolveResults(set, attempt, answers);
+  const { results, score } = resolveResults(set, attempt, answers);
+  const sheet = document.getElementById('sheet');
 
   for (const q of set.questions) {
     const li = document.getElementById(q.id);
     if (!li) continue;
     const body = li.querySelector('.q-body');
-    const r = results[q.id];
+    const given = Object.prototype.hasOwnProperty.call(answers, q.id) ? answers[q.id] : undefined;
 
     // Put the stored answer back into the (now disabled) controls.
-    if (Object.prototype.hasOwnProperty.call(answers, q.id)) {
+    if (given !== undefined) {
       if (q.type === 'choice') {
-        const radio = li.querySelector(`input[type="radio"][value="${answers[q.id]}"]`);
+        const radio = li.querySelector(`input[type="radio"][value="${given}"]`);
         if (radio) radio.checked = true;
       } else {
         const input = document.getElementById(`${q.id}-a`);
-        if (input) input.value = answers[q.id];
+        if (input) input.value = given;
       }
     }
     li.querySelectorAll('input').forEach((input) => {
       input.disabled = true;
     });
+    markChoices(li, q, given);
 
-    const verdict = r.correct ? '정답' : r.blank ? '오답 · 빈 답' : '오답';
-    const result = el(
-      'section',
-      { class: 'q-result', dataset: { result: r.correct ? 'correct' : 'wrong' }, attrs: { 'aria-label': `${set.questions.indexOf(q) + 1}번 문제 채점 결과` } },
-      el('span', { class: 'mark', attrs: { 'aria-hidden': 'true' } }),
-      el('span', { class: 'verdict', text: verdict }),
-      el('p', { class: 'answer-line', text: '정답: ' + correctAnswerText(q) }),
-    );
-    body.prepend(result);
+    const block = renderResultBlock(q, results[q.id], given, set);
+    if (animate) block.setAttribute('data-reveal', 'result');
+    body.prepend(block); // above the question's fieldset or label
     li.classList.add('graded');
   }
 
-  const scoreEl = (key) => el('span', { dataset: { score: key }, text: score[key] });
-  const heading = el('h2', { text: '채점 결과', attrs: { id: 'score-heading', tabindex: '-1' } });
-  const line = el(
-    'p',
-    { class: 'score-line' },
-    `${max.total}문제 중 `,
-    scoreEl('total'),
-    `문제 정답 · 개념 `,
-    scoreEl('concept'),
-    `/${max.concept} · 코드 분석 `,
-    scoreEl('code'),
-    `/${max.code}`,
-  );
-  const section = el('section', { attrs: { id: 'score' } }, heading, line);
+  const section = renderScore({ ...attempt, score }, set);
   document.querySelector('.sheet-head').after(section);
+  const scorePlate = plate('puncher', 'sheet-plate--right sheet-plate--score');
+  if (!animate) scorePlate.removeAttribute('data-reveal'); // a plain reopen shows the frozen sheet as it is
+  section.append(scorePlate);
+  document.querySelector('p.credits')?.replaceWith(creditsFor([...shownPlates, 'puncher']));
+
+  if (animate) {
+    section.querySelectorAll('h2, .score-line, .score-figure, .attempt-member').forEach((node) => node.setAttribute('data-reveal', 'load'));
+    stagger(section, '[data-reveal]'); // figures first ...
+    stagger(sheet, 'li.q:nth-child(-n+3) .q-result', 5); // ... then the first marks, one after another
+    reveal(section);
+    reveal(sheet);
+  }
 
   const memberSelect = document.getElementById('sheet-member');
   if (memberSelect) {
@@ -552,9 +599,10 @@ function showGraded(set, attempt, { focus }) {
   }
   const submit = document.getElementById('submit');
   if (submit) submit.remove();
-  document.getElementById('status').textContent = `채점이 끝났어요. ${max.total}문제 중 ${score.total}문제 정답이에요.`;
+  document.getElementById('status').textContent = `채점이 끝났어요. ${set.questions.length}문제 중 ${score.total}문제 정답이에요.`;
 
   if (focus) {
+    const heading = document.getElementById('score-heading');
     heading.focus({ preventScroll: true });
     heading.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
   }

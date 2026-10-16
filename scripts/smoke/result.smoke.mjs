@@ -240,4 +240,141 @@ export default async function result(kit) {
     document.querySelector('dialog#confirm button[value="cancel"]').click();
     return true;
   });
+
+  // ---------------------------------------------------------------- (f) graded in place, fixed mixed pattern
+  const mixed = mixedAnswers(set);
+  const expected = gradeSet(set, mixed);
+  assert.deepEqual(expected.score, { total: 5, concept: 4, code: 1 }, 'the mixed pattern scores 5 (q3 typed spaced and upper-case counts)');
+
+  const graded = await kit.open('quiz.html', { width: 1440, height: 900 });
+  await kit.waitFor(graded, () => document.querySelectorAll('li.q').length > 0);
+  await kit.chooseMember(graded, who);
+  await fill(graded, set, mixed);
+  await sleep(500);
+  await kit.submitSheet(graded);
+  await kit.waitFor(graded, () => document.querySelector('#score'));
+  await sleep(600);
+  const view = await graded.eval(() => ({
+    score: {
+      total: document.querySelector('[data-score="total"]')?.textContent,
+      concept: document.querySelector('[data-score="concept"]')?.textContent,
+      code: document.querySelector('[data-score="code"]')?.textContent,
+    },
+    scoreText: document.querySelector('#score')?.textContent ?? '',
+    member: document.querySelector('#attempt-member')?.textContent ?? '',
+    active: document.activeElement?.id,
+    status: document.querySelector('#status')?.textContent,
+    lis: [...document.querySelectorAll('ol#sheet > li.q')].map((li) => {
+      const block = li.querySelector('section.q-result');
+      const first = li.querySelector('fieldset, label.q-prompt');
+      const mark = block && block.querySelector('.mark');
+      const before = mark ? getComputedStyle(mark, '::before') : null;
+      return {
+        id: li.id,
+        hasBlock: !!block,
+        beforeQuestion: !!block && !!first && !!(block.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING),
+        result: block ? block.dataset.result : null,
+        label: block ? block.getAttribute('aria-label') : null,
+        text: block ? block.textContent : '',
+        lines: block ? block.querySelectorAll('.explain-line').length : 0,
+        glyphs: block ? /[✓✔✗✘]/.test(block.textContent) : false,
+        markShape: before ? { radius: before.borderRadius, width: before.width, transform: before.transform } : null,
+      };
+    }),
+  }));
+  assert.deepEqual(view.score, { total: String(expected.score.total), concept: String(expected.score.concept), code: String(expected.score.code) }, '[data-score] equals gradeSet (RSLT-01, RSLT-05)');
+  assert.match(view.scoreText, /10문제 중 5문제 정답/);
+  assert.match(view.scoreText, /개념\s*4\s*\/ 7/);
+  assert.match(view.scoreText, /코드 분석\s*1\s*\/ 3/);
+  assert.ok(view.member.includes(who) && view.member.includes('첫 시도'), `#attempt-member names the member: ${view.member}`);
+  assert.equal(view.active, 'score-heading', 'focus moves to the score heading');
+  assert.equal(view.status, '채점이 끝났어요. 10문제 중 5문제 정답이에요.');
+  assert.equal(view.lis.length, 10);
+  const byId = new Map((set.sources || []).map((src) => [src.id, src]));
+  set.questions.forEach((q, i) => {
+    const li = view.lis[i];
+    assert.ok(li.hasBlock, `${q.id} has a result block`);
+    assert.ok(li.beforeQuestion, `${q.id}: the result block comes before the question (RSLT-02)`);
+    assert.equal(li.result, expected.results[q.id].correct ? 'correct' : 'wrong', `${q.id} result`);
+    assert.equal(li.label, `${i + 1}번 문제 채점 결과`);
+    assert.ok(li.text.includes(expected.results[q.id].correct ? '정답' : '오답'), `${q.id}: says 정답 or 오답`);
+    assert.ok(li.text.includes(`정답: ${correctAnswerText(q)}`), `${q.id}: shows the correct answer`);
+    assert.ok(li.text.includes('내 답: '), `${q.id}: shows the member's answer`);
+    const lines = explanationLines(q.explanation);
+    assert.equal(li.lines, lines.length, `${q.id}: one element per explanation line`);
+    assert.ok(li.lines >= 1 && li.lines <= 5, `${q.id}: at most 5 explanation lines`);
+    assert.ok(li.text.includes(`${q.concept.name} · ${q.concept.ref}`), `${q.id}: concept and documentation entry (RSLT-04)`);
+    for (const id of q.sourceIds) {
+      assert.ok(li.text.includes(sourceLabel(byId.get(id))), `${q.id}: Notion source ${sourceLabel(byId.get(id))}`);
+    }
+    if (q.file) assert.ok(li.text.includes(`실습 파일 · ${q.file}`), `${q.id}: practice file`);
+    else assert.ok(!li.text.includes('실습 파일'), `${q.id}: no practice file line`);
+    assert.equal(li.glyphs, false, `${q.id}: marks are drawn, not check-mark characters`);
+    if (li.result === 'correct') assert.equal(li.markShape.radius, '50%', `${q.id}: a circle for 정답`);
+    else assert.notEqual(li.markShape.transform, 'none', `${q.id}: a slash for 오답`);
+  });
+  const blank = view.lis.find((l) => l.id === 'q6');
+  assert.ok(blank.text.includes('오답 · 빈 답') && blank.text.includes('내 답: 빈 답'), 'a blank answer reads 오답 · 빈 답');
+  const alt = view.lis.find((l) => l.id === 'q3');
+  assert.ok(alt.text.includes('다른 인정 답: '), 'a short answer with several accepted answers lists the others');
+  assert.equal(JSON.parse(await graded.eval((k) => localStorage.getItem(k), attemptKey)).score.total, 5);
+
+  // Scrolls the whole sheet once so every entrance has played, then back to the top for the full-page shots.
+  async function settle(p) {
+    const h = await p.eval(() => document.documentElement.scrollHeight);
+    for (let y = 0; y < h; y += 700) {
+      await p.eval((top) => {
+        window.scrollTo(0, top);
+        return true;
+      }, y);
+      await sleep(90);
+    }
+    await p.eval(() => {
+      window.scrollTo(0, 0);
+      return true;
+    });
+    await sleep(900);
+  }
+  await settle(graded);
+  const stuck = await graded.eval(() => [...document.querySelectorAll('[data-reveal]')].filter((n) => !n.classList.contains('is-in')).length);
+  assert.equal(stuck, 0, 'every entrance played after scrolling the sheet');
+  await kit.shot(graded, 'graded-1440');
+
+  // 768 and 390: the same graded sheet, no sideways scroll
+  for (const [width, height, mobile] of [[768, 1024, false], [390, 844, true]]) {
+    const p = await kit.open('quiz.html', { width, height, mobile });
+    await kit.waitFor(p, () => document.querySelectorAll('li.q').length > 0);
+    await kit.chooseMember(p, who);
+    await fill(p, set, mixed);
+    await sleep(500);
+    await kit.submitSheet(p);
+    await kit.waitFor(p, () => document.querySelector('#score'));
+    await sleep(500);
+    await settle(p);
+    const w = await p.eval(() => ({ scrollWidth: document.documentElement.scrollWidth, innerWidth, blocks: document.querySelectorAll('section.q-result').length }));
+    assert.equal(w.blocks, 10);
+    assert.ok(w.scrollWidth <= w.innerWidth, `graded sheet overflows at ${width}: ${w.scrollWidth} > ${w.innerWidth}`);
+    await kit.shot(p, `graded-${width}`);
+  }
+
+  // ---------------------------------------------------------------- (g) design-review view: in memory, nothing stored
+  const sample = await kit.open(`quiz.html?set=${set.id}&review=graded`, { width: 1440, height: 900 });
+  await kit.waitFor(sample, () => document.querySelector('#score'));
+  await sleep(500);
+  const rv = await sample.eval(() => ({
+    blocks: document.querySelectorAll('section.q-result').length,
+    keys: Object.keys(localStorage).filter((k) => k.startsWith('srq:')),
+    member: document.querySelector('#attempt-member')?.textContent,
+    submit: !!document.querySelector('#submit'),
+    total: document.querySelector('[data-score="total"]')?.textContent,
+  }));
+  assert.equal(rv.blocks, 10);
+  assert.deepEqual(rv.keys, [], 'the review view writes no srq: key');
+  assert.equal(rv.member, '견본 채점 화면 · 저장되지 않아요');
+  assert.equal(rv.submit, false, 'no submit control in the review view');
+  assert.equal(rv.total, '5');
+  const ignored = await kit.open(`quiz.html?set=${set.id}&review=other`, { width: 1440, height: 900 });
+  await kit.waitFor(ignored, () => document.querySelectorAll('li.q').length > 0);
+  const still = await ignored.eval(() => ({ score: !!document.querySelector('#score'), submit: !!document.querySelector('#submit') }));
+  assert.deepEqual(still, { score: false, submit: true }, 'any other review value is ignored');
 }
