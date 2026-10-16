@@ -31,16 +31,16 @@
 - [x] **QUIZ-01**: 스터디원은 링크를 열면 로그인 없이 이번 주 세트를 풀 수 있고, 처음 한 번 이름을 고른다(6명 목록)
 - [x] **QUIZ-02**: 10문제를 한 흐름으로 풀 수 있고, 코드는 읽기 쉽게(고정폭 글꼴, 줄바꿈 유지) 표시된다
 - [x] **QUIZ-03**: 풀던 답은 브라우저에 자동 저장되어 창을 닫았다 와도 이어서 풀 수 있다
-- [ ] **QUIZ-04**: 제출 전 빈 문항 수를 확인하고, 제출하면 그 세트의 첫 시도 답이 고정된다
+- [x] **QUIZ-04**: 제출 전 빈 문항 수를 확인하고, 제출하면 그 세트의 첫 시도 답이 고정된다
 - [x] **QUIZ-05**: 모바일 브라우저에서도 풀이부터 제출까지 가능하다
 
 ### Results (채점·해설)
 
 - [x] **RSLT-01**: 제출 즉시 객관식은 정답 번호로, 단답형은 인정 정답 목록과 정규화(앞뒤·중간 공백, 대소문자, 전각/반각) 비교로 자동 채점된다
-- [ ] **RSLT-02**: 각 문제 위에 정답 여부와 정답이 표시된다
+- [x] **RSLT-02**: 각 문제 위에 정답 여부와 정답이 표시된다
 - [x] **RSLT-03**: 각 문제에 최대 5줄 요약 해설이 표시된다
-- [ ] **RSLT-04**: 해설에 관련 개념 출처(개념 이름 + 공식 문서 항목 이름)와 노션 출처("작성자 · 날짜") 또는 실습 파일명이 표시된다
-- [ ] **RSLT-05**: 결과 화면에 총점과 개념/코드 분석별 점수가 표시된다
+- [x] **RSLT-04**: 해설에 관련 개념 출처(개념 이름 + 공식 문서 항목 이름)와 노션 출처("작성자 · 날짜") 또는 실습 파일명이 표시된다
+- [x] **RSLT-05**: 결과 화면에 총점과 개념/코드 분석별 점수가 표시된다
 
 ### Review (오답 복습 공간)
 
@@ -99,13 +99,13 @@
 | QUIZ-01 | Phase 1 | Complete |
 | QUIZ-02 | Phase 1 | Complete |
 | QUIZ-03 | Phase 1 | Complete |
-| QUIZ-04 | Phase 1 | Pending |
+| QUIZ-04 | Phase 1 | Complete |
 | QUIZ-05 | Phase 1 | Complete |
 | RSLT-01 | Phase 1 | Complete |
-| RSLT-02 | Phase 1 | Pending |
+| RSLT-02 | Phase 1 | Complete |
 | RSLT-03 | Phase 1 | Complete |
-| RSLT-04 | Phase 1 | Pending |
-| RSLT-05 | Phase 1 | Pending |
+| RSLT-04 | Phase 1 | Complete |
+| RSLT-05 | Phase 1 | Complete |
 | DSGN-01 | Phase 1 | Complete |
 | DSGN-02 | Phase 1 | Complete |
 | GEN-01 | Phase 2 | Pending |
