@@ -1,0 +1,16 @@
+{
+  "name": "study-review-quiz",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "serve": "node scripts/serve.mjs",
+    "test": "node --test \"tests/**/*.test.mjs\"",
+    "validate": "node scripts/validate-quiz.mjs quizzes/index.json && node scripts/validate-quiz.mjs quizzes/2026-W42.json",
+    "smoke": "node scripts/smoke.mjs",
+    "lint:design": "node .claude/skills/design-taste-frontend/scripts/lint.mjs .",
+    "check": "npm test && npm run validate && npm run lint:design"
+  }
+}
