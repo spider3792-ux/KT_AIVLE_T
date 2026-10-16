@@ -28,13 +28,13 @@
   4. 검사 스크립트가 올바른 샘플은 통과시키고, 문항 수·구성·보기 수·정답 범위·출처 형식을 일부러 틀린 샘플은 어디가 틀렸는지 알려주며 거부한다
   5. 첫 화면과 퀴즈·결과 화면이 design-taste-frontend 기준의 하나의 디자인 방향으로 통일되어 있고, 모든 문구가 한국어다 (agent-browser로 화면 확인)
 
-**Plans**: 3/6 plans executed (4 waves)
+**Plans**: 4/6 plans executed (4 waves)
 
 Plans:
 - [x] 01-01-PLAN.md — Walking skeleton: tracer sheet (JSON → render → 제출 → 채점 → localStorage → frozen reopen), name picker entry page, full 10-question sample week (wave 1)
 - [x] 01-02-PLAN.md — Author checker: validate-quiz CLI + pure core, --sources records check, index check, broken fixtures, grading/static-safety tests, README (wave 2)
 - [x] 01-03-PLAN.md — Home hero: tabbed folder stack with member tabs, front-folder name picker, Index-with-preview live thing, archival picture set, shared motion helpers (wave 2)
-- [ ] 01-04-PLAN.md — Home sections: 출처 bars, itinerary slip, book-spine index, back-of-card footer with credits, motion layer, home gate with no allowance (wave 3)
+- [x] 01-04-PLAN.md — Home sections: 출처 bars, itinerary slip, book-spine index, back-of-card footer with credits, motion layer, home gate with no allowance (wave 3)
 - [ ] 01-05-PLAN.md — Exam sheet taking state: printed-exam art direction, thumb targets, verbatim code, draft autosave/restore, storage-failure notice (wave 3)
 - [ ] 01-06-PLAN.md — Submit and results: blank-count dialog, frozen first attempt, graded-in-place result blocks and score, sheet picture decision, phase gate (wave 4)
 
@@ -105,7 +105,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. quiz-core | 3/6 | In Progress | - |
+| 1. quiz-core | 4/6 | In Progress | - |
 | 2. weekly-generator | 0/TBD | Not started | - |
 | 3. share | 0/TBD | Not started | - |
 | 4. review-notebook | 0/TBD | Not started | - |
