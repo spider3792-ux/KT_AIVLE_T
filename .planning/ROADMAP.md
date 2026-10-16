@@ -15,6 +15,7 @@
 ## Phase Details
 
 ### Phase 1: quiz-core (풀이·채점·해설 사이트)
+
 **Goal**: 스터디원이 한 주 세트를 풀고 제출하면 즉시 채점되어 정답·5줄 해설·출처를 보는 정적 사이트가, 정해진 JSON 형식과 검사 스크립트 위에서 동작한다
 **Mode:** mvp
 **Depends on**: Nothing (first phase)
@@ -26,10 +27,11 @@
   3. 제출 즉시 객관식·단답형이 자동 채점되고(단답형은 공백·대소문자 차이를 무시), 각 문제 위에 정답 여부·정답·5줄 이내 해설·개념 출처·"작성자 · 날짜" 출처가 표시된다
   4. 검사 스크립트가 올바른 샘플은 통과시키고, 문항 수·구성·보기 수·정답 범위·출처 형식을 일부러 틀린 샘플은 어디가 틀렸는지 알려주며 거부한다
   5. 첫 화면과 퀴즈·결과 화면이 design-taste-frontend 기준의 하나의 디자인 방향으로 통일되어 있고, 모든 문구가 한국어다 (agent-browser로 화면 확인)
-**Plans**: 6 plans (4 waves)
+
+**Plans**: 1/6 plans executed (4 waves)
 
 Plans:
-- [ ] 01-01-PLAN.md — Walking skeleton: tracer sheet (JSON → render → 제출 → 채점 → localStorage → frozen reopen), name picker entry page, full 10-question sample week (wave 1)
+- [x] 01-01-PLAN.md — Walking skeleton: tracer sheet (JSON → render → 제출 → 채점 → localStorage → frozen reopen), name picker entry page, full 10-question sample week (wave 1)
 - [ ] 01-02-PLAN.md — Author checker: validate-quiz CLI + pure core, --sources records check, index check, broken fixtures, grading/static-safety tests, README (wave 2)
 - [ ] 01-03-PLAN.md — Home hero: tabbed folder stack with member tabs, front-folder name picker, Index-with-preview live thing, archival picture set, shared motion helpers (wave 2)
 - [ ] 01-04-PLAN.md — Home sections: 출처 bars, itinerary slip, book-spine index, back-of-card footer with credits, motion layer, home gate with no allowance (wave 3)
@@ -37,6 +39,7 @@ Plans:
 - [ ] 01-06-PLAN.md — Submit and results: blank-count dialog, frozen first attempt, graded-in-place result blocks and score, sheet picture decision, phase gate (wave 4)
 
 ### Phase 2: weekly-generator (주간 출제 스킬)
+
 **Goal**: 승환이 Claude Code에서 "이번 주 퀴즈 만들어 줘" 한 번으로, 그 주 노션 기록(과 선택적 실습 파일)에 근거한 검사 통과 세트를 얻는다
 **Mode:** mvp
 **Depends on**: Phase 1 (JSON 형식·검사 스크립트)
@@ -47,10 +50,12 @@ Plans:
   3. 스킬이 검사 스크립트를 스스로 돌려 통과할 때까지 고친 뒤 결과를 보여주고, 템플릿 기본 문구는 문제에 섞이지 않는다
   4. 실습 CSV(한글 CP949 포함)·엑셀·.py·.ipynb를 함께 주면 그 내용으로 만든 문제의 출처에 파일명이 붙고, 파일이 없으면 노션만으로 10문제가 나온다
   5. 기록이 기준(6개·작성자 3명)보다 적으면 스킬이 멈추고 승환에게 진행 여부를 묻는다
+
 **Plans**: TBD
 **사용자 준비**: 실제 주차 노션 Markdown 내보내기 1~2주 분량 (스킬 검증용). 견본 사본은 커넥터로 읽을 수 있어 초기 테스트에 사용 가능
 
 ### Phase 3: share (배포·공유)
+
 **Goal**: 6명이 링크 하나로 이번 주 세트를 풀 수 있고, 승환의 주간 출제가 "만들기 → 확인 → 올리기"로 끝난다
 **Mode:** mvp
 **Depends on**: Phase 2
@@ -60,10 +65,12 @@ Plans:
   2. 스킬이 검사 통과 세트를 주차 목록에 추가하고, 승환이 확인하면 커밋·푸시까지 해서 몇 분 안에 사이트에 새 주차가 보인다
   3. README에 승환용 주간 루틴(노션 내보내기 → "이번 주 퀴즈 만들어 줘" → 링크 공유)이 단계별로 있다
   4. 실제 한 주 세트로 승환이 처음부터 끝까지 루틴을 한 번 돌려 10분 안에 끝난다
+
 **Plans**: TBD
 **사용자 준비**: GitHub 계정, 저장소 이름 결정. 문제 JSON의 작성자 이름·코드가 공개됨을 다시 확인
 
 ### Phase 4: review-notebook (오답 복습·지난 주차)
+
 **Goal**: 스터디원이 언제든 들어와 자기가 틀린 문제를 한눈에 모아 보고 다시 풀고, 지난 주차를 다시 볼 수 있다
 **Mode:** mvp
 **Depends on**: Phase 3 (여러 주차가 쌓이는 흐름)
@@ -74,9 +81,11 @@ Plans:
   2. 오답 문제를 다시 풀 수 있고, 다시 푼 결과는 첫 시도 기록과 점수를 바꾸지 않는다
   3. 지난 주차 목록에서 어떤 주차든 열어 처음 풀거나 결과를 다시 볼 수 있다
   4. 화면은 Phase 1과 같은 디자인 방향을 따른다
+
 **Plans**: TBD
 
 ### Phase 5: team-stats (팀 정답률)
+
 **Goal**: 서버 없이 6명의 결과가 모여, 사이트에서 문제별 "6명 중 N명 정답"과 "스터디 전체 정답률 낮은 문제"를 볼 수 있다
 **Mode:** mvp
 **Depends on**: Phase 4
@@ -88,6 +97,7 @@ Plans:
   3. 통계가 있는 주차의 결과 화면에 문제별 "6명 중 N명 정답"이 보인다
   4. "스터디 전체 정답률 낮은 문제" 탭에 3명 이상 응답·정답률 50% 이하 문제가 모여 있다
   5. 구글 폼 만들기와 폼 주소·항목 ID 설정 방법이 안내 문서에 있다
+
 **Plans**: TBD
 **사용자 준비**: 구글 폼 1개 생성 (안내 문서대로)
 
@@ -95,7 +105,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. quiz-core | 0/6 | Planned | - |
+| 1. quiz-core | 1/6 | In Progress | - |
 | 2. weekly-generator | 0/TBD | Not started | - |
 | 3. share | 0/TBD | Not started | - |
 | 4. review-notebook | 0/TBD | Not started | - |
