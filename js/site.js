@@ -63,6 +63,15 @@ export async function loadWeek(requestedId) {
   return { weeks, entry, set };
 }
 
+// The six member names for the name picker. Entries without a usable name are dropped.
+export async function loadMembers() {
+  const json = await getJson('members.json');
+  const list = Array.isArray(json && json.members) ? json.members : [];
+  return list
+    .filter((m) => m && typeof m.name === 'string' && m.name.trim() !== '')
+    .map((m) => ({ name: m.name.trim(), confirm: m.confirm === true }));
+}
+
 // Korean error panel with an optional retry button and/or link.
 export function renderError(container, message, { retry, link } = {}) {
   const actions = [];

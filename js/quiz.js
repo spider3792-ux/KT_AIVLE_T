@@ -1,5 +1,5 @@
 // Exam sheet controller: render the set, grade on 답안 제출, freeze the first attempt, show it again on reload.
-import { el, loadWeek, renderError, store } from './site.js';
+import { el, loadMembers, loadWeek, renderError, store } from './site.js';
 import { correctAnswerText, gradeSet, sanitizeAnswers } from './grade.js';
 
 const app = document.querySelector('#app');
@@ -20,7 +20,14 @@ async function start() {
     }
     return;
   }
-  render(data.set);
+  // A members.json failure must not block the sheet: without names the 성명 field is simply not required.
+  let members = [];
+  try {
+    members = await loadMembers();
+  } catch {
+    members = [];
+  }
+  render(data.set, members);
 }
 
 function buildQuestion(q) {
@@ -87,18 +94,35 @@ function readAnswers(set) {
   return answers;
 }
 
-function render(set) {
+function render(set, members) {
   document.title = `${set.title} · 스터디 복습 퀴즈`;
   const sheet = el('ol', { attrs: { id: 'sheet' } }, set.questions.map(buildQuestion));
   const status = el('p', { attrs: { id: 'status', role: 'status' } });
   const submit = el('button', { class: 'button', text: '답안 제출', attrs: { id: 'submit', type: 'button' } });
   const block = el('div', { class: 'submit-block' }, submit, status);
 
+  const savedName = (store.get('member') || {}).name;
+  const select = el(
+    'select',
+    {
+      attrs: { id: 'sheet-member', name: 'member' },
+      on: {
+        change: () => {
+          if (select.value) store.set('member', { name: select.value });
+        },
+      },
+    },
+    el('option', { text: '이름 고르기', attrs: { value: '' } }),
+    members.map((m) => el('option', { text: m.name, attrs: { value: m.name } })),
+  );
+  if (members.some((m) => m.name === savedName)) select.value = savedName;
+
   const head = el(
     'header',
     { class: 'sheet-head' },
     el('h1', { text: set.title, attrs: { id: 'sheet-title' } }),
     el('p', { class: 'sheet-meta', text: `${set.questions.length}문제 · 약 ${set.estimatedMinutes}분` }),
+    members.length ? el('div', { class: 'sheet-name' }, el('label', { text: '성명', attrs: { for: 'sheet-member' } }), select) : null,
   );
 
   const paper = el('article', { class: 'paper' }, head, sheet, block);
@@ -117,11 +141,17 @@ function render(set) {
       showGraded(set, existing, { focus: true });
       return;
     }
+    if (members.length && !select.value) {
+      status.textContent = '성명을 먼저 골라 주세요.';
+      select.focus();
+      return;
+    }
+    status.textContent = '';
     const answers = readAnswers(set);
     const graded = gradeSet(set, answers);
     const attempt = {
       setId: set.id,
-      member: (store.get('member') || {}).name || null,
+      member: select.value || null,
       submittedAt: new Date().toISOString(),
       answers,
       results: graded.results,
@@ -204,6 +234,11 @@ function showGraded(set, attempt, { focus }) {
   }
   document.querySelector('.sheet-head').after(section);
 
+  const memberSelect = document.getElementById('sheet-member');
+  if (memberSelect) {
+    if (attempt.member && [...memberSelect.options].some((o) => o.value === attempt.member)) memberSelect.value = attempt.member;
+    memberSelect.disabled = true;
+  }
   const submit = document.getElementById('submit');
   if (submit) submit.remove();
   document.getElementById('status').textContent = `채점이 끝났어요. ${max.total}문제 중 ${score.total}문제 정답이에요.`;

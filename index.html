@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>이번 주 시험지 · 스터디 복습 퀴즈</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="css/site.css">
+  <script type="module" src="js/home.js"></script>
+</head>
+<body class="home">
+  <header class="home-top">
+    <a class="wordmark" href="index.html">스터디 복습 퀴즈</a>
+    <a id="past-weeks" class="text-link" href="index.html" hidden>지난 주차</a>
+  </header>
+  <main>
+    <section class="hero">
+      <h1>이번 주 시험지</h1>
+      <p id="hero-sub" class="hero-sub"></p>
+    </section>
+    <div class="folder-wrap">
+      <section id="app" class="folder">
+        <fieldset class="member-pick">
+          <legend>이름을 골라 주세요</legend>
+          <div id="members" class="member-grid"></div>
+        </fieldset>
+        <div class="folder-action">
+          <button id="start" class="button" type="button">풀기 시작</button>
+          <p id="start-hint" class="start-hint" role="status"></p>
+        </div>
+        <noscript><p>이 사이트는 자바스크립트가 켜져 있어야 쓸 수 있어요.</p></noscript>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

@@ -148,7 +148,8 @@ function makeKit(browser) {
 // ---------------------------------------------------------------- built-in scenario
 async function skeleton(kit) {
   const { assert, data } = kit;
-  const { set } = data;
+  const { set, members } = data;
+  const first = members[0].name;
 
   // (a) server
   const idxRes = await fetch(`${kit.BASE}/quizzes/index.json`);
@@ -180,6 +181,12 @@ async function skeleton(kit) {
 
   await kit.answerAll(page, set, 'correct');
   await kit.submitSheet(page);
+  // No name chosen yet: the sheet refuses to grade and asks for the 성명 first.
+  const refused = await page.eval(() => ({ score: !!document.querySelector('#score'), status: document.querySelector('#status').textContent }));
+  assert.equal(refused.score, false, 'graded without a name');
+  assert.ok(refused.status.length > 0, 'status explains the missing name');
+  await kit.chooseMember(page, first);
+  await kit.submitSheet(page);
   await kit.waitFor(page, () => document.querySelector('#score'));
   const graded = await page.eval(() => ({
     total: document.querySelector('[data-score="total"]')?.textContent,
@@ -206,6 +213,7 @@ async function skeleton(kit) {
   const phone = await kit.open('quiz.html', { width: 390, height: 844, mobile: true });
   await kit.waitFor(phone, () => document.querySelectorAll('li.q').length > 0);
   await kit.answerAll(phone, set, 'wrong');
+  await kit.chooseMember(phone, first);
   await kit.submitSheet(phone);
   await kit.waitFor(phone, () => document.querySelector('#score'));
   const low = await phone.eval(() => ({
@@ -216,6 +224,50 @@ async function skeleton(kit) {
   assert.equal(low.total, '0');
   assert.ok(low.scrollWidth <= low.innerWidth, `phone overflow ${low.scrollWidth} > ${low.innerWidth}`);
   await kit.shot(phone, 'sheet-graded-phone');
+
+  // (d) entry page: home -> name -> 풀기 시작 -> sheet with the name filled -> submit
+  const home = await kit.open('index.html');
+  await kit.waitFor(home, () => document.querySelectorAll('input[name="member"]').length > 0);
+  const h = await home.eval(() => ({
+    lang: document.documentElement.lang,
+    week: document.querySelector('#week-title')?.textContent,
+    values: [...document.querySelectorAll('input[name="member"]')].map((i) => i.value),
+    path: location.pathname,
+  }));
+  assert.equal(h.lang, 'ko');
+  assert.equal(h.week, data.index[0].title);
+  assert.deepEqual(h.values, members.map((m) => m.name));
+  await kit.shot(home, 'home-desktop');
+
+  await home.eval(() => {
+    document.querySelector('#start').click();
+    return true;
+  });
+  await kit.sleep(300);
+  const stay = await home.eval(() => ({ path: location.pathname, hint: document.querySelector('#start-hint').textContent }));
+  assert.equal(stay.path, h.path, 'left the home page without a name');
+  assert.ok(stay.hint.trim().length > 0, '#start-hint is empty');
+
+  await kit.chooseMember(home, first);
+  await home.eval(() => {
+    document.querySelector('#start').click();
+    return true;
+  });
+  await kit.waitFor(home, () => location.pathname.endsWith('quiz.html') && document.querySelectorAll('li.q').length > 0);
+  const landed = await home.eval(() => ({
+    search: location.search,
+    member: JSON.parse(localStorage.getItem('srq:member')),
+    selected: document.querySelector('select#sheet-member').value,
+  }));
+  assert.equal(landed.search, `?set=${set.id}`);
+  assert.deepEqual(landed.member, { v: 1, name: first });
+  assert.equal(landed.selected, first);
+
+  await kit.answerAll(home, set, 'correct');
+  await kit.submitSheet(home);
+  await kit.waitFor(home, () => document.querySelector('#score'));
+  const attempt = await home.eval((id) => JSON.parse(localStorage.getItem(`srq:attempt:${id}`)), set.id);
+  assert.equal(attempt.member, first);
 }
 
 // ---------------------------------------------------------------- runner
