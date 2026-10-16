@@ -51,10 +51,10 @@ Plans:
   4. 실습 CSV(한글 CP949 포함)·엑셀·.py·.ipynb를 함께 주면 그 내용으로 만든 문제의 출처에 파일명이 붙고, 파일이 없으면 노션만으로 10문제가 나온다
   5. 기록이 기준(6개·작성자 3명)보다 적으면 스킬이 멈추고 승환에게 진행 여부를 묻는다
 
-**Plans**: 2 plans (2 waves)
+**Plans**: 1/2 plans executed (2 waves)
 
 Plans:
-- [ ] 02-01-PLAN.md — Tracer: `scripts/week.mjs` + pure `week-core.mjs` (KST 오늘 → 지난 금요일~이번 금요일 범위, ISO 주차 id, 직전 세트 사용 기록), tests, `work/` 무시, `npm run week` (wave 1)
+- [x] 02-01-PLAN.md — Tracer: `scripts/week.mjs` + pure `week-core.mjs` (KST 오늘 → 지난 금요일~이번 금요일 범위, ISO 주차 id, 직전 세트 사용 기록), tests, `work/` 무시, `npm run week` (wave 1)
 - [ ] 02-02-PLAN.md — `weekly-quiz` 스킬(SKILL.md 10단계 + rubric.md), 스킬 정적 테스트, 견본 페이지 worked example, lean VALIDATION + 끝 단계 드라이런 체크리스트 (wave 2)
 
 **사용자 준비**: 실제 주차 노션 Markdown 내보내기 1~2주 분량 (스킬 검증용). 견본 사본은 커넥터로 읽을 수 있어 초기 테스트에 사용 가능
@@ -111,7 +111,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. quiz-core | 6/6 | In Progress | - |
-| 2. weekly-generator | 0/2 | Planned | - |
+| 2. weekly-generator | 1/2 | In Progress | - |
 | 3. share | 0/TBD | Not started | - |
 | 4. review-notebook | 0/TBD | Not started | - |
 | 5. team-stats | 0/TBD | Not started | - |

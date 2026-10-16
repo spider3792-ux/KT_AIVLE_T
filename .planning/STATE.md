@@ -1,18 +1,18 @@
 ---
 gsd_state_version: "1.0"
-current_phase: 1
-current_phase_name: quiz-core (풀이·채점·해설 사이트)
-status: verifying
-stopped_at: Completed 01-06-PLAN.md
-last_updated: "2026-10-16T12:44:02.978Z"
-last_activity: 2026-10-16
-last_activity_desc: Phase 1 execution started
-state_head: 2d73d4a8b429d0c02011718a16ee8ca9bfcabdae
+current_phase: 2
+current_phase_name: weekly-generator (주간 출제 스킬)
+status: executing
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-10-16T15:42:34.524Z"
+last_activity: 2026-10-17
+last_activity_desc: Phase 2 execution started
+state_head: 30e396c6f6d1142d85f63c5c4e21476a2c94ab29
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 8
+  completed_plans: 7
   percent: 0
 ---
 
@@ -23,14 +23,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-16)
 
 **Core value:** 매주 그 주 6명의 노션 복습 기록에 근거한 10문제 세트가 링크 하나로 공유되고, 모두가 같은 문제를 풀고 출처가 달린 해설로 복습할 수 있어야 한다 — 비용 0원, 서버 없이.
-**Current focus:** Phase 1 — quiz-core (풀이·채점·해설 사이트)
+**Current focus:** Phase 2 — weekly-generator (주간 출제 스킬)
 
 ## Current Position
 
-Phase: 1 (quiz-core (풀이·채점·해설 사이트)) — EXECUTING
-Plan: 6 of 6
-Status: Phase complete — ready for verification
-Last activity: 2026-10-16 — Phase 1 execution started
+Phase: 2 (weekly-generator (주간 출제 스킬)) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-10-17 — Phase 2 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -62,6 +62,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P04 | about 1 h active | 2 tasks | 5 files |
 | Phase 1 P05 | 18 min | 2 tasks | 6 files |
 | Phase 1 P06 | 26 min | 3 tasks | 7 files |
+| Phase 2 P01 | 15 min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,7 @@ Recent decisions affecting current work:
 - [Phase 1]: 01-05: draft autosave in js/quiz.js (300ms debounce, immediate on change, flushed on visibilitychange/pagehide), restored only through sanitizeAnswers; #storage-notice lives in the sheet header and is shown whenever store.persistent is false or a set() fails
 - [Phase 1]: 01-06: native dialog#confirm with returnValue reset is the only submit confirmation; first attempt frozen; graded result block sits above each question with CSS-drawn marks in the margin column
 - [Phase 1]: 01-06: ?review=graded renders the graded sheet in memory only (no srq: key) so inspect.mjs can gate it through scripts/inspect-url.mjs
+- [Phase 2]: 02-01: previous set = newest index entry with id strictly below the target week id, so re-making the newest week does not exclude its own sources
 
 ### Pending Todos
 
@@ -108,6 +110,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-16T12:44:02.908Z
-Stopped at: Completed 01-06-PLAN.md
+Last session: 2026-10-16T15:42:34.288Z
+Stopped at: Completed 02-01-PLAN.md
 Resume file: None
