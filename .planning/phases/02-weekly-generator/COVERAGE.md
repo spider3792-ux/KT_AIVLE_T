@@ -1,0 +1,1 @@
+No external API integration: Claude Code project skill + local Node scripts; generation happens in the user's own Claude Code session (no API key). The optional Notion connector path uses the session's existing connector (read-only fetch, written to work/inbox/dump.json by the skill), not an integration built in this phase.
