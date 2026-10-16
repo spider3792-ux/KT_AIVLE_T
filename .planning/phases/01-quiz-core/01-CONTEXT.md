@@ -32,6 +32,7 @@ Requirements: FMT-01..05, QUIZ-01..05, RSLT-01..05, DSGN-01..02.
 - choice: selected index === answer.
 - short: normalize both sides — trim, collapse internal whitespace, remove all spaces for comparison, lowercase, NFKC (full-width → half-width) — then match against any accepted answer.
 - Score: total /10 plus 개념 /7 and 코드 분석 /3.
+- **Approved extension (2026-10-16, orchestrator, per research 26-case table):** the short-answer normalizer additionally strips invisible code points, drops empty `()` pairs (so `groupby()` = `groupby`), drops `_` and middle-dot style separators only between word characters, and drops trailing `.!?`. It does NOT strip `-` or `.` inside answers. No regex lookbehind (Safari < 16.4). Accepted answers are normalized with the same function.
 
 ### Attempt storage (localStorage)
 - Key namespace `srq:` . Draft answers autosave per set (`srq:draft:<setId>`), first submitted attempt frozen (`srq:attempt:<setId>` = { member, answers, results, submittedAt }). Chosen member in `srq:member`.

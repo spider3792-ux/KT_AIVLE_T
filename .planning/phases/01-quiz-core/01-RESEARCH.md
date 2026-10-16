@@ -726,23 +726,23 @@ Guidance: 7 choice-leaning + 3 short total is plenty; vary the correct index (no
 | A11 | `npx serve` rewrites clean URLs by default | Alternatives | Only a reason against it; the custom server is chosen anyway |
 | A12 | Allowing `--allow few-pictures,still-page,no-footage` for `quiz.html` is acceptable to the user | Pitfall 4 | If not acceptable the quiz page needs ≥4 pictures and motion; more design work |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Member full names**
+1. **Member full names** — RESOLVED: orchestrator decision 1 (김준수, 이주현, 차승환 + 스터디원 4/5/6 placeholders with `confirm: true`; user fills real names)
    - What we know: CONTEXT says placeholders until confirmed; screenshot shows 김준수, 송지…, 노아…, 이주현, 차승환, 정보경….
    - What's unclear: the exact six names.
    - Recommendation: ship `members.json` with the best readable names plus a README "SAMPLE" note; the validator checks `author ∈ members`, so a later rename is a one-file change. Ask the user at the human-verify checkpoint.
 
-2. **Inspector policy for `quiz.html` (and any later screen without pictures)**
+2. **Inspector policy for `quiz.html` (and any later screen without pictures)** — RESOLVED: orchestrator decision 2 (revised) — no `few-pictures` allowance at phase end; the sheet carries ≥4 tipped-in plates; only a defended `no-footage` WARN
    - What we know: the pictures/motion/focal-point floors apply to whatever page is inspected; the skill says it is "Not for dashboards or app screens"; CONTEXT says every screen goes through the gate.
    - What's unclear: whether the exam sheet should carry ≥4 pictures and 8 moving elements, or use documented `--allow` flags.
    - Recommendation: home passes with zero allowances; `quiz.html` gets a large `h1` plus a slim picture band and entrance motion if cheap, otherwise `--allow few-pictures,still-page,no-footage` stated in the report. Put it in the plan as a decision for the user at the checkpoint.
 
-3. **Shared browser / set-keyed attempt** (Pitfall 14): keep the locked key, show the member name on the result; revisit in Phase 4.
+3. **Shared browser / set-keyed attempt** (Pitfall 14): RESOLVED: orchestrator decision 3 — keep the locked key, show the member name on the result; revisit in Phase 4.
 
-4. **Phase 3 heads-up: what Pages will publish.** The repo root contains `.planning/`, `.claude/`, `.taste-skill/`. Jekyll (default) excludes dot-directories and underscore paths; adding `.nojekyll` publishes everything. [CITED: docs.github.com "Files that start with an underscore are missing" - Jekyll skips hidden/underscore files; `.nojekyll` disables Jekyll and publishes sources unmodified] Do not add `.nojekyll` casually; decide in Phase 3 (deploy only needed files via Actions, or keep Jekyll).
+4. **Phase 3 heads-up: what Pages will publish.** RESOLVED: orchestrator decision 5 (no `.nojekyll` in Phase 1; decide in Phase 3). The repo root contains `.planning/`, `.claude/`, `.taste-skill/`. Jekyll (default) excludes dot-directories and underscore paths; adding `.nojekyll` publishes everything. [CITED: docs.github.com "Files that start with an underscore are missing" - Jekyll skips hidden/underscore files; `.nojekyll` disables Jekyll and publishes sources unmodified] Do not add `.nojekyll` casually; decide in Phase 3 (deploy only needed files via Actions, or keep Jekyll).
 
-5. **`no-footage` WARN.** `assets.mjs --video "punched card computer"` returned one unrelated portrait clip and a 64.8 MB 1951 film (over the 25 MB cap, 10:53 long); ffmpeg is not installed to trim. Recommendation: defend the WARN (no honest short clip fits) and use a slow scale/drift on a photograph as the "one moving picture".
+5. **`no-footage` WARN.** RESOLVED: defended in 01-04 T2 (no honest clip; slow drift on a photograph is the moving picture). `assets.mjs --video "punched card computer"` returned one unrelated portrait clip and a 64.8 MB 1951 film (over the 25 MB cap, 10:53 long); ffmpeg is not installed to trim. Recommendation: defend the WARN (no honest short clip fits) and use a slow scale/drift on a photograph as the "one moving picture".
 
 ## Environment Availability
 

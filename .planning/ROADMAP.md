@@ -26,7 +26,15 @@
   3. 제출 즉시 객관식·단답형이 자동 채점되고(단답형은 공백·대소문자 차이를 무시), 각 문제 위에 정답 여부·정답·5줄 이내 해설·개념 출처·"작성자 · 날짜" 출처가 표시된다
   4. 검사 스크립트가 올바른 샘플은 통과시키고, 문항 수·구성·보기 수·정답 범위·출처 형식을 일부러 틀린 샘플은 어디가 틀렸는지 알려주며 거부한다
   5. 첫 화면과 퀴즈·결과 화면이 design-taste-frontend 기준의 하나의 디자인 방향으로 통일되어 있고, 모든 문구가 한국어다 (agent-browser로 화면 확인)
-**Plans**: TBD
+**Plans**: 6 plans (4 waves)
+
+Plans:
+- [ ] 01-01-PLAN.md — Walking skeleton: tracer sheet (JSON → render → 제출 → 채점 → localStorage → frozen reopen), name picker entry page, full 10-question sample week (wave 1)
+- [ ] 01-02-PLAN.md — Author checker: validate-quiz CLI + pure core, --sources records check, index check, broken fixtures, grading/static-safety tests, README (wave 2)
+- [ ] 01-03-PLAN.md — Home hero: tabbed folder stack with member tabs, front-folder name picker, Index-with-preview live thing, archival picture set, shared motion helpers (wave 2)
+- [ ] 01-04-PLAN.md — Home sections: 출처 bars, itinerary slip, book-spine index, back-of-card footer with credits, motion layer, home gate with no allowance (wave 3)
+- [ ] 01-05-PLAN.md — Exam sheet taking state: printed-exam art direction, thumb targets, verbatim code, draft autosave/restore, storage-failure notice (wave 3)
+- [ ] 01-06-PLAN.md — Submit and results: blank-count dialog, frozen first attempt, graded-in-place result blocks and score, sheet picture decision, phase gate (wave 4)
 
 ### Phase 2: weekly-generator (주간 출제 스킬)
 **Goal**: 승환이 Claude Code에서 "이번 주 퀴즈 만들어 줘" 한 번으로, 그 주 노션 기록(과 선택적 실습 파일)에 근거한 검사 통과 세트를 얻는다
@@ -87,7 +95,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. quiz-core | 0/TBD | Not started | - |
+| 1. quiz-core | 0/6 | Planned | - |
 | 2. weekly-generator | 0/TBD | Not started | - |
 | 3. share | 0/TBD | Not started | - |
 | 4. review-notebook | 0/TBD | Not started | - |
