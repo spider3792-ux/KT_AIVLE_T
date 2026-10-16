@@ -28,7 +28,7 @@
 
 ### Quiz (풀이)
 
-- [ ] **QUIZ-01**: 스터디원은 링크를 열면 로그인 없이 이번 주 세트를 풀 수 있고, 처음 한 번 이름을 고른다(6명 목록)
+- [x] **QUIZ-01**: 스터디원은 링크를 열면 로그인 없이 이번 주 세트를 풀 수 있고, 처음 한 번 이름을 고른다(6명 목록)
 - [ ] **QUIZ-02**: 10문제를 한 흐름으로 풀 수 있고, 코드는 읽기 쉽게(고정폭 글꼴, 줄바꿈 유지) 표시된다
 - [ ] **QUIZ-03**: 풀던 답은 브라우저에 자동 저장되어 창을 닫았다 와도 이어서 풀 수 있다
 - [ ] **QUIZ-04**: 제출 전 빈 문항 수를 확인하고, 제출하면 그 세트의 첫 시도 답이 고정된다
@@ -96,7 +96,7 @@
 | FMT-03 | Phase 1 | Complete |
 | FMT-04 | Phase 1 | Complete |
 | FMT-05 | Phase 1 | Complete |
-| QUIZ-01 | Phase 1 | Pending |
+| QUIZ-01 | Phase 1 | Complete |
 | QUIZ-02 | Phase 1 | Pending |
 | QUIZ-03 | Phase 1 | Pending |
 | QUIZ-04 | Phase 1 | Pending |

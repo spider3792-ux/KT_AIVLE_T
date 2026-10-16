@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 1
 current_phase_name: quiz-core (풀이·채점·해설 사이트)
 status: executing
-stopped_at: Completed 01-02-PLAN.md
-last_updated: "2026-10-16T07:14:16.564Z"
+stopped_at: Completed 01-03-PLAN.md
+last_updated: "2026-10-16T07:35:18.940Z"
 last_activity: 2026-10-16
 last_activity_desc: Phase 1 execution started
-state_head: e2a55635894f50a6ba5d380f5855a4f2cd95230f
+state_head: 9eace94f20b69e19017c74e72aaf711a589a9a64
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 6
-  completed_plans: 2
+  completed_plans: 3
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-16)
 ## Current Position
 
 Phase: 1 (quiz-core (풀이·채점·해설 사이트)) — EXECUTING
-Plan: 3 of 6
+Plan: 4 of 6
 Status: Ready to execute
 Last activity: 2026-10-16 — Phase 1 execution started
 
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0%
 |------|----------|-------|-------|
 | Phase 01 P01 | 23 min | 3 tasks | 15 files |
 | Phase 01 P02 | 10 min | 2 tasks | 11 files |
+| Phase 01 P03 | 19 min | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,8 @@ Recent decisions affecting current work:
 - [Phase 01]: Noto Serif KR stands in Literata's role (Literata has no Hangul)
 - [Phase 01]: Plan 01-01 commits live on branch gsd/phase-1-quiz-core because master is a protected default branch; merge before further plans
 - [Phase 01]: Plan 01-02: parseRecords throws a Korean-stem Error and the CLI maps it to exit 2; the --sources records format stays isolated in parseRecords/checkAgainstRecords for Phase 2
+- [Phase 01]: Plan 01-03: home folder stack uses two back folders with three member tabs each (3+3) so 풀기 시작 fits the first screen; the previewed tab turns paper, not ink
+- [Phase 01]: Plan 01-03: entrances use CSS animation on the independent translate property (html.js + reduced-motion gated) so hover transforms keep working; css/site.css is frozen for wave 3
 
 ### Pending Todos
 
@@ -97,6 +100,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-16T07:14:16.495Z
-Stopped at: Completed 01-02-PLAN.md
+Last session: 2026-10-16T07:35:18.889Z
+Stopped at: Completed 01-03-PLAN.md
 Resume file: None
