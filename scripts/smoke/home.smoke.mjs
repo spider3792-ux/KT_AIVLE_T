@@ -119,6 +119,58 @@ export default async function home(kit) {
   const checked = await page.eval(() => document.querySelector('input[name="member"]:checked')?.value);
   assert.equal(checked, members[0].name);
 
+
+  // ---------------------------------------------------------------- the sections below the folders (01-04)
+  // scroll to the bottom and back so lazy pictures load and the entrances fire
+  for (const frac of [0.25, 0.5, 0.75, 1]) {
+    await page.eval((f) => {
+      window.scrollTo(0, document.documentElement.scrollHeight * f);
+      return true;
+    }, frac);
+    await kit.sleep(350);
+  }
+  await page.eval(() => {
+    window.scrollTo(0, 0);
+    return true;
+  });
+  await kit.sleep(900);
+
+  const below = await page.eval(() => ({
+    bars: [...document.querySelectorAll('#bars details.bar')].map((d) => ({ name: d.querySelector('.bar-name').textContent, open: d.hasAttribute('open') })),
+    entries: [...document.querySelectorAll('#bars .src')].map((li) => ({ id: li.id, text: li.textContent, tabular: getComputedStyle(li.querySelector('.src-date')).fontVariantNumeric })),
+    total: document.querySelector('#how .slip-total')?.textContent || '',
+    totalBg: document.querySelector('#how .slip-total') ? getComputedStyle(document.querySelector('#how .slip-total')).backgroundColor : '',
+    spines: [...document.querySelectorAll('#contents #shelf a')].map((a) => ({ href: a.getAttribute('href'), label: a.getAttribute('aria-label') })),
+    sections: ['sources', 'how', 'contents', 'back'].map((id) => !!document.getElementById(id)),
+  }));
+  assert.deepEqual(below.sections, [true, true, true, true], 'sections #sources #how #contents #back exist');
+  assert.equal(below.bars.length, members.length, 'one details bar per member');
+  assert.deepEqual(below.bars.map((b) => b.name), members.map((m) => m.name), 'bars follow members.json order');
+  assert.deepEqual(below.bars.map((b) => b.open), below.bars.map((_, i) => i === 0), 'only the first bar is open');
+  for (const s of set.sources) {
+    const row = below.entries.find((e) => e.id === `source-${s.id}`);
+    assert.ok(row, `entry row #source-${s.id} is missing`);
+    assert.ok(row.text.includes(s.title), `row ${s.id} lacks its title`);
+    assert.ok(row.text.includes(md(s.date)), `row ${s.id} lacks its date ${md(s.date)}`);
+    assert.match(row.tabular, /tabular-nums/, 'dates use tabular figures');
+  }
+  for (const word of ['점수', '해설', '틀린 문제']) assert.ok(below.total.includes(word), `inverted last row lacks "${word}": ${below.total}`);
+  assert.equal(below.totalBg, 'rgb(31, 48, 56)', 'the last slip row is inverted onto --ink');
+  assert.equal(below.spines.length, set.questions.length, 'one spine per question');
+  below.spines.forEach((s, i) => {
+    assert.ok(s.href.endsWith(`?set=${data.index[0].id}#q${i + 1}`), `spine ${i + 1} href: ${s.href}`);
+    assert.ok(s.label.startsWith(`${i + 1}번 문제`), `spine ${i + 1} aria-label: ${s.label}`);
+  });
+
+  // at least four different real pictures are really visible (loaded, opaque, 160x120 or larger) at 1440
+  const pictures = await page.eval(() =>
+    [...document.images]
+      .filter((i) => i.naturalWidth > 0 && i.offsetWidth >= 160 && i.offsetHeight >= 120 && getComputedStyle(i).opacity !== '0' && getComputedStyle(i).visibility !== 'hidden')
+      .map((i) => i.getAttribute('src')),
+  );
+  assert.ok(new Set(pictures).size >= 4, `only ${new Set(pictures).size} real pictures visible at 1440: ${pictures}`);
+  await kit.shot(page, 'home-desktop-full');
+
   // ---------------------------------------------------------------- phone 390x844
   const phone = await kit.open('index.html', { width: 390, height: 844, mobile: true });
   await settled(kit, phone);
@@ -132,7 +184,7 @@ export default async function home(kit) {
       .map((l) => Math.round(l.getBoundingClientRect().height)),
     tabsRight: Math.max(...[...document.querySelectorAll('.tab')].map((t) => t.getBoundingClientRect().right)),
   }));
-  assert.ok(small.scrollWidth <= small.innerWidth, `phone overflow ${small.scrollWidth} > ${small.innerWidth}`);
+  assert.ok(small.scrollWidth <= small.innerWidth, `phone overflow (whole page, sections included) ${small.scrollWidth} > ${small.innerWidth}`);
   assert.ok(small.tabsRight <= small.innerWidth, `a tab runs off the right edge (${small.tabsRight})`);
   assert.equal(small.labels.length, 6);
   assert.ok(small.labels.every((h) => h >= 44), `a name option is under 44px tall: ${small.labels}`);

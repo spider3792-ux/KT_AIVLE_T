@@ -189,6 +189,154 @@ function setupPreview(set, tabs) {
   });
 }
 
+// ---------- sections below the folder stack: 출처 bars, the slip, the spine shelf, the card back ----------
+// Everything is built from the week's set with el() / textContent.
+
+const WEEK_ID = /^\d{4}-W\d{2}$/;
+const QUESTION_ID = /^q([1-9]|10)$/;
+const dateOf = (s) => sourceLabel(s).replace(s.author + ' · ', '');
+const monthDay = (iso) => {
+  const [, m, d] = String(iso).split('-').map(Number);
+  return m + '/' + d;
+};
+const citing = (set, id) => set.questions.filter((q) => Array.isArray(q.sourceIds) && q.sourceIds.includes(id));
+
+// One bar per member that opens in place to list their entries; the first bar is open.
+function renderSources(set, members) {
+  const names = members.map((m) => m.name);
+  for (const s of set.sources) if (!names.includes(s.author)) names.push(s.author);
+  const bars = names.map((name, i) => {
+    const entries = set.sources.filter((s) => s.author === name);
+    const list = entries.length
+      ? el(
+          'ul',
+          { class: 'src-list' },
+          entries.map((s) => {
+            const n = citing(set, s.id).length;
+            return el(
+              'li',
+              { class: 'src', attrs: { id: 'source-' + s.id } },
+              el('p', { class: 'src-title', text: s.title }),
+              el('p', { class: 'src-date nums', text: dateOf(s) }),
+              el('p', { class: 'src-meta', text: s.subject + (n ? ' · 문제 ' + n + '개에 쓰였어요' : '') }),
+            );
+          }),
+        )
+      : el('p', { class: 'src-empty', text: '이번 주 기록이 없어요' });
+    return el(
+      'details',
+      { class: 'bar', attrs: { open: i === 0, 'data-reveal': 'bar' } },
+      el(
+        'summary',
+        {},
+        el('span', { class: 'bar-name', text: name }),
+        el('span', { class: 'bar-count nums', text: entries.length ? '기록 ' + entries.length + '개' : '기록 없음' }),
+        el('span', { class: 'bar-mark', attrs: { 'aria-hidden': 'true' } }),
+      ),
+      el('div', { class: 'bar-panel' }, list),
+    );
+  });
+  document.querySelector('#bars').replaceChildren(...bars);
+  const authors = new Set(set.sources.map((s) => s.author)).size;
+  document.querySelector('#sources-note').textContent = '이번 주 시험지는 ' + authors + '명이 노션에 남긴 기록 ' + set.sources.length + '개에서 나왔어요.';
+}
+
+// The itinerary slip: stages under time headings, dotted leaders, one inverted row at the end.
+function renderSlip(set, entry) {
+  const authors = new Set(set.sources.map((s) => s.author)).size;
+  const concept = set.questions.filter((q) => q.kind === 'concept').length;
+  const code = set.questions.filter((q) => q.kind === 'code').length;
+  const minutes = '약 ' + set.estimatedMinutes + '분';
+  const stages = [
+    ['월~목', [['각자 노션에 복습 기록 남기기', '기록 ' + set.sources.length + '개'], ['기록을 남긴 스터디원', authors + '명']]],
+    ['금요일', [['기록에서 문제 출제', set.questions.length + '문제'], ['개념', concept + '문제'], ['코드 분석', code + '문제']]],
+    ['풀 때', [['이름 고르고 풀기 시작', minutes], ['제출하면 바로 채점 · 해설', '즉시']]],
+  ];
+  const range = set.range ? monthDay(set.range.from) + ' ~ ' + monthDay(set.range.to) : '';
+  document.querySelector('#slip').replaceChildren(
+    el('p', { class: 'slip-head', attrs: { 'data-reveal': 'row' } }, el('span', { text: entry.title }), el('span', { class: 'nums', text: range })),
+    ...stages.map(([head, rows]) =>
+      el(
+        'section',
+        { class: 'slip-stage' },
+        el('h3', { text: head, attrs: { 'data-reveal': 'row' } }),
+        el(
+          'ul',
+          { class: 'slip-rows' },
+          rows.map(([what, value]) =>
+            el(
+              'li',
+              { class: 'row', attrs: { 'data-reveal': 'row' } },
+              el('span', { class: 'row-text', text: what }),
+              el('span', { class: 'row-dots', attrs: { 'aria-hidden': 'true' } }),
+              el('span', { class: 'row-value nums', text: value }),
+            ),
+          ),
+        ),
+      ),
+    ),
+    el('p', { class: 'slip-total', text: '손에 남는 것: 점수, 해설, 틀린 문제 · ' + minutes, attrs: { 'data-reveal': 'row' } }),
+  );
+}
+
+// The shelf: one spine per question, linking to that question on the sheet.
+function renderShelf(set, entry) {
+  const shelf = document.querySelector('#shelf');
+  if (!WEEK_ID.test(entry.id)) return;
+  const tones = new Map();
+  const toneOf = (subject) => {
+    if (!tones.has(subject)) tones.set(subject, (tones.size % 4) + 1);
+    return tones.get(subject);
+  };
+  const spines = [];
+  set.questions.forEach((q, i) => {
+    if (!QUESTION_ID.test(q.id)) return;
+    const src = Array.isArray(q.sourceIds) && q.sourceIds.length ? set.sources.find((s) => s.id === q.sourceIds[0]) : null;
+    const label = src ? sourceLabel(src) : '실습 파일' + (q.file ? ' · ' + q.file : '');
+    const subject = src ? src.subject : (q.concept && q.concept.name) || '';
+    const kind = q.kind === 'code' ? '코드 분석' : '개념';
+    const band = (subject ? subject + ' · ' : '') + kind;
+    spines.push(
+      el(
+        'li',
+        { attrs: { 'data-reveal': 'spine' } },
+        el(
+          'a',
+          {
+            class: 'spine',
+            dataset: { tone: toneOf(subject) },
+            attrs: { href: 'quiz.html?set=' + encodeURIComponent(entry.id) + '#' + q.id, 'aria-label': i + 1 + '번 문제, ' + label + ', ' + band },
+          },
+          el('span', { class: 'spine-label', text: label }),
+          el('span', { class: 'spine-band', text: band }),
+        ),
+      ),
+    );
+  });
+  shelf.replaceChildren(...spines);
+}
+
+// The card back: a message from the week's numbers and the sheet link.
+function renderCard(set, entry) {
+  const authors = new Set(set.sources.map((s) => s.author)).size;
+  document.querySelector('#card-message').textContent =
+    authors + '명이 남긴 기록 ' + set.sources.length + '개에서 ' + set.questions.length + '문제가 나왔어요. 풀고 나면 점수와 해설, 틀린 문제가 손에 남아요. 다음 시험지는 다음 주 금요일에 나와요.';
+  if (WEEK_ID.test(entry.id)) document.querySelector('#card-quiz').setAttribute('href', 'quiz.html?set=' + encodeURIComponent(entry.id));
+}
+
+// Each section's parts arrive in reading order, numbered per section (the delay is capped in css/site.css).
+function numberEntrances() {
+  const within = (selector, scope, start = 0) => {
+    const node = document.querySelector(selector);
+    if (node) stagger(node, scope, start);
+  };
+  within('#sources .sources-col', '[data-reveal]');
+  within('#sources .sources-plates', '[data-reveal]', 1);
+  within('#how', '[data-reveal]');
+  within('#contents', '[data-reveal]');
+  within('#back', '[data-reveal]');
+}
+
 async function start() {
   let week;
   let members;
@@ -227,6 +375,12 @@ async function start() {
 
   buildTabs(members);
   setupPreview(set, [...stack.querySelectorAll('.tab')]);
+
+  renderSources(set, members);
+  renderSlip(set, entry);
+  renderShelf(set, entry);
+  renderCard(set, entry);
+  numberEntrances();
 
   // The tabs arrive after their bands.
   stagger(stack, '.tab', 5);
