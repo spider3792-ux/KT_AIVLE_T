@@ -405,6 +405,88 @@ pre.code code {
   }
 }
 
+/* ---------- the confirmation: a paper slip laid on the dark ground, same perforated sides as the sheet ---------- */
+
+#confirm {
+  width: min(34rem, calc(100vw - 32px));
+  max-width: none;
+  padding: clamp(24px, 5vw, 40px) clamp(20px, 4vw, 36px);
+  border: 0;
+  border-inline: var(--edge, 10px) dotted var(--ink);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--ink);
+}
+
+#confirm::backdrop {
+  background: rgb(31 48 56 / 0.86);
+}
+
+#confirm h2 {
+  font-size: var(--step-head);
+}
+
+#confirm-desc {
+  margin-top: 16px;
+  font-size: var(--step-body);
+  line-height: 1.55;
+}
+
+#blank-count {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-top: clamp(24px, 4vw, 32px);
+}
+
+.confirm-actions .button {
+  flex: 1 1 12rem;
+}
+
+/* Same shape as the one button; only the fill steps down so the least destructive control is not the accent. */
+.button--quiet {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .button--quiet:hover {
+    background-color: #dfe5e8;
+  }
+}
+
+.button--quiet:focus-visible {
+  outline-color: var(--accent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  #confirm[open] {
+    animation: slip-in var(--t-ui) var(--ease-out);
+  }
+
+  #confirm[open]::backdrop {
+    animation: slip-fade var(--t-ui) ease-out;
+  }
+}
+
+@keyframes slip-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+@keyframes slip-fade {
+  from {
+    opacity: 0;
+  }
+}
+
 /* Foot of the paper: credit for every picture the sheet shows. */
 .credits {
   max-width: 72ch;

@@ -340,6 +340,7 @@ async function main() {
       } catch (e) {
         console.log(`FAIL ${sc.name}: ${String(e && e.message ? e.message : e).split('\n')[0]}`);
         failed += 1;
+        if (process.env.SMOKE_VERBOSE) console.log(String(e && e.stack ? e.stack : e));
       } finally {
         for (const p of kit.opened) await p.close();
       }

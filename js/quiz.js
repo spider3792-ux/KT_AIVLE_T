@@ -1,6 +1,6 @@
 // Exam sheet controller: render the set, grade on 답안 제출, freeze the first attempt, show it again on reload.
 import { el, loadMembers, loadWeek, renderError, ROOT, store } from './site.js';
-import { correctAnswerText, gradeSet, sanitizeAnswers } from './grade.js';
+import { correctAnswerText, gradeSet, isBlank, sanitizeAnswers } from './grade.js';
 import { reveal, stagger } from './motion.js';
 
 const app = document.querySelector('#app');
@@ -402,19 +402,14 @@ function render(set, members) {
   focusFromHash();
   window.addEventListener('hashchange', focusFromHash);
 
-  submit.addEventListener('click', () => {
-    // The first attempt is frozen: a second click can never overwrite it.
+  // The first attempt is frozen: whatever happens, an attempt that already exists is shown and never overwritten.
+  function doSubmit() {
     const existing = store.get('attempt:' + set.id);
     if (existing) {
+      draft.stop();
       showGraded(set, existing, { focus: true });
       return;
     }
-    if (members.length && !select.value) {
-      status.textContent = '성명을 먼저 골라 주세요.';
-      select.focus();
-      return;
-    }
-    status.textContent = '';
     const answers = readAnswers(set);
     const graded = gradeSet(set, answers);
     const attempt = {
@@ -428,7 +423,56 @@ function render(set, members) {
     store.set('attempt:' + set.id, attempt);
     draft.stop(); // the attempt replaces the draft
     showGraded(set, attempt, { focus: true });
+  }
+
+  submit.addEventListener('click', () => {
+    const existing = store.get('attempt:' + set.id);
+    if (existing) {
+      showGraded(set, existing, { focus: true });
+      return;
+    }
+    if (members.length && !select.value) {
+      status.textContent = '성명을 먼저 골라 주세요.';
+      select.focus();
+      return;
+    }
+    status.textContent = '';
+    const answers = readAnswers(set);
+    const blanks = set.questions.filter((q) => isBlank(q, answers[q.id])).length;
+    confirmSubmit(blanks, doSubmit);
   });
+}
+
+// The native dialog is the only confirmation: Esc and the cancel button leave every answer and the draft untouched.
+function confirmSubmit(blanks, onSubmit) {
+  const dlg = document.getElementById('confirm');
+  if (!dlg || typeof dlg.showModal !== 'function') {
+    onSubmit();
+    return;
+  }
+  const lead = document.getElementById('blank-lead');
+  const count = document.getElementById('blank-count');
+  const tail = document.getElementById('blank-tail');
+  if (blanks > 0) {
+    lead.textContent = '비어 있는 문항이 ';
+    count.textContent = String(blanks);
+    count.hidden = false;
+    tail.textContent = '개 있어요. 제출하면 첫 시도 답이 고정돼요.';
+  } else {
+    lead.textContent = '모든 문항에 답했어요. 제출하면 첫 시도 답이 고정돼요.';
+    count.textContent = '';
+    count.hidden = true;
+    tail.textContent = '';
+  }
+  dlg.returnValue = ''; // it persists between openings: a stale 'submit' would grade without being asked
+  dlg.addEventListener(
+    'close',
+    () => {
+      if (dlg.returnValue === 'submit') onSubmit();
+    },
+    { once: true },
+  );
+  dlg.showModal();
 }
 
 // Stored data is untrusted: stored answers go through sanitizeAnswers, stored results are used only for known ids.
