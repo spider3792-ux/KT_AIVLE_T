@@ -69,6 +69,16 @@
   color: var(--ink);
 }
 
+/* A fieldset's baseline is its first option, so the marker would drift down to the choices.
+   An empty zero-height line at the top of the item, sized like the prompt, pins the number to the prompt line. */
+#sheet > li.q:not(.graded)::before {
+  content: "\200b";
+  display: block;
+  height: 0;
+  font-size: var(--step-lead);
+  line-height: 1.4;
+}
+
 #sheet > li.q:last-child {
   margin-bottom: 0;
 }
@@ -324,4 +334,9 @@ pre.code code {
 /* Focus lands here programmatically after grading; the heading is not a control, so no ring. */
 #score-heading:focus {
   outline: none;
+}
+
+.q-body input[type="text"]::placeholder {
+  color: var(--muted);
+  opacity: 1;
 }

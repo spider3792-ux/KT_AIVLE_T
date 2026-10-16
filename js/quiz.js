@@ -66,6 +66,7 @@ function buildQuestion(q) {
         autocorrect: 'off',
         spellcheck: 'false',
         enterkeyhint: 'next',
+        placeholder: '답을 입력하세요',
       },
       on: {
         // Hangul IME commit plus implicit submission: Enter never submits the sheet.
@@ -92,6 +93,21 @@ function readAnswers(set) {
     }
   }
   return answers;
+}
+
+// #q9 in the address scrolls that question into view and focuses its first control (01-04's spine links use this).
+function focusFromHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  if (!/^q[0-9]{1,2}$/.test(id)) return;
+  const li = document.getElementById(id);
+  if (!li || !li.matches('#sheet > li.q')) return;
+  let target = li.querySelector('pre.code, input:not(:disabled)');
+  if (!target) {
+    li.setAttribute('tabindex', '-1');
+    target = li;
+  }
+  target.focus({ preventScroll: true });
+  li.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
 }
 
 function render(set, members) {
@@ -131,8 +147,12 @@ function render(set, members) {
   const saved = store.get('attempt:' + set.id);
   if (saved) {
     showGraded(set, saved, { focus: false });
+    focusFromHash();
     return;
   }
+
+  focusFromHash();
+  window.addEventListener('hashchange', focusFromHash);
 
   submit.addEventListener('click', () => {
     // The first attempt is frozen: a second click can never overwrite it.
@@ -213,6 +233,7 @@ function showGraded(set, attempt, { focus }) {
       el('p', { class: 'answer-line', text: '정답: ' + correctAnswerText(q) }),
     );
     body.prepend(result);
+    li.classList.add('graded');
   }
 
   const scoreEl = (key) => el('span', { dataset: { score: key }, text: score[key] });

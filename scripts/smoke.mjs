@@ -171,6 +171,23 @@ async function skeleton(kit) {
   assert.equal(info.title, set.title);
   assert.equal(info.count, set.questions.length);
 
+  // The full sample week: 10 questions, 7 개념 + 3 코드 분석, three code blocks kept verbatim.
+  const shape = await page.eval(() => ({
+    total: document.querySelectorAll('li.q').length,
+    concept: document.querySelectorAll('li.q[data-kind="concept"]').length,
+    code: document.querySelectorAll('li.q[data-kind="code"]').length,
+    pres: [...document.querySelectorAll('pre.code')].map((p) => ({ text: p.querySelector('code').textContent, ws: getComputedStyle(p).whiteSpace })),
+  }));
+  assert.equal(shape.total, 10);
+  assert.equal(shape.concept, 7);
+  assert.equal(shape.code, 3);
+  const codeQs = set.questions.filter((q) => q.code);
+  assert.equal(shape.pres.length, 3);
+  shape.pres.forEach((p, i) => {
+    assert.equal(p.text, codeQs[i].code, `code block ${i + 1} is verbatim`);
+    assert.equal(p.ws, 'pre', 'code keeps white-space: pre');
+  });
+
   const codes = await page.eval(() =>
     [...document.querySelectorAll('li.q')].map((li) => ({ id: li.id, code: li.querySelector('pre.code code')?.textContent ?? null })),
   );
@@ -193,6 +210,12 @@ async function skeleton(kit) {
     results: [...document.querySelectorAll('section.q-result')].map((s) => s.dataset.result),
   }));
   assert.equal(graded.total, String(set.questions.length));
+  const parts = await page.eval(() => ({
+    total: document.querySelector('[data-score="total"]').textContent,
+    concept: document.querySelector('[data-score="concept"]').textContent,
+    code: document.querySelector('[data-score="code"]').textContent,
+  }));
+  assert.deepEqual(parts, { total: '10', concept: '7', code: '3' });
   assert.equal(graded.results.length, set.questions.length);
   assert.ok(graded.results.every((r) => r === 'correct'), 'every result is correct');
 
@@ -208,6 +231,16 @@ async function skeleton(kit) {
   assert.equal(frozen.enabled, 0, 'no enabled input after reload');
   assert.equal(frozen.submit, false, '#submit gone after reload');
   await kit.shot(page, 'sheet-graded-desktop');
+
+  // (b2) a question id in the address scrolls to it and focuses inside it
+  const jump = await kit.open(`quiz.html?set=${set.id}#q9`);
+  await kit.waitFor(jump, () => document.querySelector('li#q9') && document.activeElement && document.activeElement.closest('li#q9'));
+
+  // (b3) an id that is not in the index never reaches fetch; the Korean not-found panel shows instead
+  const lost = await kit.open('quiz.html?set=2026-W99');
+  await kit.waitFor(lost, () => document.querySelector('.error-panel'));
+  const lostText = await lost.eval(() => document.querySelector('.error-message').textContent);
+  assert.equal(lostText, '이 주차를 찾을 수 없어요.');
 
   // (c) phone, wrong answers
   const phone = await kit.open('quiz.html', { width: 390, height: 844, mobile: true });
