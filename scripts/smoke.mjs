@@ -46,8 +46,8 @@ function makeKit(browser) {
     opened,
 
     // A fresh page at `path` with this origin's localStorage cleared before the page's own scripts run.
-    async open(path, { width = 1440, height = 900, mobile = false } = {}) {
-      const page = await browser.newPage({ width, height, mobile });
+    async open(path, { width = 1440, height = 900, mobile = false, reducedMotion = false } = {}) {
+      const page = await browser.newPage({ width, height, mobile, reducedMotion });
       opened.push(page);
       await page.goto(`${BASE}/quizzes/index.json`, { settleMs: 50 });
       await page.eval(() => {

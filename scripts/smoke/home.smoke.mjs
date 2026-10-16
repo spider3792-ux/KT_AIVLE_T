@@ -171,6 +171,59 @@ export default async function home(kit) {
   assert.ok(new Set(pictures).size >= 4, `only ${new Set(pictures).size} real pictures visible at 1440: ${pictures}`);
   await kit.shot(page, 'home-desktop-full');
 
+
+  // ---------------------------------------------------------------- the back of the card, credits, reduced motion (01-04)
+  // every picture under assets/ that the page shows is named in the credits paragraph
+  const credits = await (await fetch(`${kit.BASE}/assets/credits.json`)).json();
+  const shown = await page.eval(() => [...document.images].map((i) => i.getAttribute('src')).filter((s) => s && s.startsWith('assets/')));
+  const creditText = await page.eval(() => document.querySelector('footer .credits')?.textContent || '');
+  assert.ok(creditText.length > 0, 'no credits paragraph in the footer');
+  assert.ok(shown.length >= 4, `only ${shown.length} assets/ pictures on the page`);
+  for (const src of new Set(shown)) {
+    const c = credits.find((x) => x.file === src);
+    assert.ok(c, `${src} has no entry in assets/credits.json`);
+    assert.ok(creditText.includes(c.title.slice(0, 60)), `the credits paragraph does not name "${c.title.slice(0, 60)}" (${src})`);
+  }
+  // every credit link is same-tab, or opens with rel="noopener noreferrer"
+  const blank = await page.eval(() => [...document.querySelectorAll('a[target="_blank"]')].filter((a) => !/noopener/.test(a.rel) || !/noreferrer/.test(a.rel)).map((a) => a.href));
+  assert.deepEqual(blank, [], 'target=_blank links without rel="noopener noreferrer"');
+
+  const links = await page.eval(() => ({
+    quiz: document.querySelector('#card-quiz')?.getAttribute('href'),
+    targets: ['#sources', '#how', '#contents'].map((h) => [h, !!document.querySelector(`#back a[href="${h}"]`) && !!document.querySelector(h)]),
+    imprint: document.querySelector('#back .imprint')?.textContent || '',
+    imprintSize: parseFloat(getComputedStyle(document.querySelector('#back .imprint')).fontSize),
+  }));
+  assert.match(links.quiz, new RegExp(`quiz\\.html\\?set=${data.index[0].id}$`), 'the footer sheet link carries ?set=');
+  for (const [h, ok] of links.targets) assert.ok(ok, `footer link ${h} does not resolve to a section`);
+  assert.ok(links.imprint.includes('샘플 데이터로 만든 화면'), 'the imprint names the sample data');
+  assert.ok(links.imprintSize >= 13, `imprint is ${links.imprintSize}px`);
+
+  // a spine answers the pointer: it turns to full ink
+  await page.eval(() => {
+    document.querySelector('#shelf a').scrollIntoView({ block: 'center' });
+    return true;
+  });
+  await kit.sleep(1200);
+  const spineAt = await center(page, '#shelf li:nth-child(2) a');
+  await page.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: spineAt.x, y: spineAt.y });
+  await kit.sleep(400);
+  const spineBg = await page.eval(() => getComputedStyle(document.querySelector('#shelf li:nth-child(2) a')).backgroundColor);
+  assert.equal(spineBg, 'rgb(31, 48, 56)', 'a hovered spine turns to --ink');
+
+  // reduced motion: every [data-reveal] part is fully visible within 500ms of load
+  const calm = await kit.open('index.html', { width: 1440, height: 900, reducedMotion: true });
+  await kit.waitFor(calm, () => document.querySelectorAll('#bars details.bar').length > 0);
+  await kit.sleep(500);
+  assert.ok(await calm.eval(() => matchMedia('(prefers-reduced-motion: reduce)').matches), 'the page was not opened with reduced motion');
+  const hidden = await calm.eval(() =>
+    [...document.querySelectorAll('[data-reveal]')].filter((n) => getComputedStyle(n).opacity !== '1').map((n) => n.className || n.tagName),
+  );
+  assert.deepEqual(hidden, [], 'under reduced motion every [data-reveal] element is visible');
+  const still = await calm.eval(() => [...document.querySelectorAll('[data-reveal]')].filter((n) => getComputedStyle(n).translate !== 'none').length);
+  assert.equal(still, 0, 'under reduced motion nothing is held off-position');
+  await kit.shot(calm, 'home-desktop-reduced');
+
   // ---------------------------------------------------------------- phone 390x844
   const phone = await kit.open('index.html', { width: 390, height: 844, mobile: true });
   await settled(kit, phone);
