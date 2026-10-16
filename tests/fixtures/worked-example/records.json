@@ -1,0 +1,16 @@
+{
+  "records": [
+    {
+      "id": "s1",
+      "author": "차승환",
+      "date": "2026-10-13",
+      "title": "10/13 Pandas groupby (예시)",
+      "subject": "Pandas",
+      "codeBlocks": [
+        "df.groupby('동')['단속건수'].sum()\n",
+        "df.groupby(['동', '요일'])['단속건수'].agg(['sum', 'mean']).reset_index()\n"
+      ],
+      "files": []
+    }
+  ]
+}
