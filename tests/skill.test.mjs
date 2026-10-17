@@ -149,9 +149,9 @@ test('SKILL.md links the rubric and names the fixture that exist', () => {
   assert.ok(existsSync(`${EX}/records.json`));
 });
 
-test('headings 1단계..10단계 exist in numeric order', () => {
+test('headings 1단계..11단계 exist in numeric order', () => {
   const nums = headings.map((h) => h.title.match(/^(\d+)단계/)).filter(Boolean).map((m) => Number(m[1]));
-  assert.deepEqual(nums, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  assert.deepEqual(nums, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
   assert.ok(headings.some((h) => h.title.startsWith('원칙')));
 });
 
@@ -167,6 +167,7 @@ const REQUIRED = {
   '8단계': ['node scripts/validate-quiz.mjs work/<id>/set.json --sources work/<id>/records.json', '5'],
   '9단계': ['블라인드'],
   '10단계': ['quizzes/<id>.json', '교체', '다른 id', '중단', 'index.json'],
+  '11단계': ['사이트에 올릴까요?', 'npm run publish -- <id>', '올려 달라고 할 때만', 'spider3792-ux.github.io/KT_AIVLE_T'],
 };
 for (const [key, literals] of Object.entries(REQUIRED)) {
   test(`SKILL.md ${key} holds its required literals`, () => {
