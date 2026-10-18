@@ -193,6 +193,18 @@ test('SKILL.md order: the intake report sits between step 4 and step 7', () => {
   assert.ok(at < BODY.indexOf('## 7단계'));
 });
 
+test('question material is limited to Notion sections 1-2 plus attached files (승환 decision 2026-10-18)', () => {
+  const s3 = step('3');
+  for (const lit of ['출제 재료 범위', '1. 오늘 배운 내용', '2. 어려웠던 내용', '3. 해결 방법', '4. 한 줄 인사이트', '출제 재료가 아니에요', '.py', '.csv', '엑셀']) {
+    assert.ok(s3.includes(lit), `step 3 lacks "${lit}"`);
+  }
+  assert.ok(step('4').includes('3번 칸 "최종 코드"는 넣지 않아요'), 'step 4 must keep section-3 code out of codeBlocks');
+  assert.ok(step('6').includes('3~4문제'), 'step 6 must set the share of file-based questions');
+  assert.ok(step('1').includes('지난주 월~금 + 이번 주 수~목'), 'step 1 must allow a custom multi-range window');
+  assert.ok(!RUBRIC.includes('그 내용과 이어 줘요'), 'rubric must not mine the (DX 관점) insight line');
+  assert.ok(RUBRIC.includes('4. 한 줄 인사이트') && RUBRIC.includes('쓰지 않아요'));
+});
+
 test('the skill folder holds only SKILL.md and rubric.md', () => {
   assert.deepEqual(readdirSync(SKILL_DIR).sort(), ['SKILL.md', 'rubric.md']);
 });
