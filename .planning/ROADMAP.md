@@ -6,9 +6,9 @@
 
 ## Phases
 
-- [ ] **Phase 1: quiz-core (풀이·채점·해설 사이트)** - 샘플 세트로 풀이부터 정답·해설·출처 표시까지 되는 정적 사이트와 문제 JSON 형식·검사 스크립트
-- [ ] **Phase 2: weekly-generator (주간 출제 스킬)** - 노션 내보내기·실습 파일로 7+3 세트를 만들고 검사까지 하는 Claude Code 프로젝트 스킬
-- [ ] **Phase 3: share (배포·공유)** - GitHub 공개 저장소 + Pages 배포, 스킬이 세트를 올리는 흐름, 승환용 주간 루틴 안내
+- [x] **Phase 1: quiz-core (풀이·채점·해설 사이트)** - 샘플 세트로 풀이부터 정답·해설·출처 표시까지 되는 정적 사이트와 문제 JSON 형식·검사 스크립트
+- [x] **Phase 2: weekly-generator (주간 출제 스킬)** - 노션 내보내기·실습 파일로 7+3 세트를 만들고 검사까지 하는 Claude Code 프로젝트 스킬
+- [x] **Phase 3: share (배포·공유)** - GitHub 공개 저장소 + Pages 배포, 스킬이 세트를 올리는 흐름, 승환용 주간 루틴 안내
 - [ ] **Phase 4: review-notebook (오답 복습·지난 주차)** - 내가 틀린 문제 모아보기, 통계에 영향 없는 다시 풀기, 지난 주차 보기
 - [ ] **Phase 5: team-stats (팀 정답률)** - 미리 채워진 구글 폼으로 결과 모으기, 팀 통계 반영, "전체 정답률 낮은 문제" 탭
 
@@ -110,8 +110,8 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. quiz-core | 6/6 | In Progress | - |
-| 2. weekly-generator | 2/2 | In Progress | - |
-| 3. share | 0/TBD | Not started | - |
+| 1. quiz-core | 6/6 | Complete | 2026-10-17 |
+| 2. weekly-generator | 2/2 | Complete (첫 실제 출제 때 dry run D1–D7 확인) | 2026-10-17 |
+| 3. share | quick (publish script + README + Pages) | Complete | 2026-10-18 |
 | 4. review-notebook | 0/TBD | Not started | - |
 | 5. team-stats | 0/TBD | Not started | - |

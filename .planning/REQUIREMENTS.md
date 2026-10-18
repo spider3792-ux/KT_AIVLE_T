@@ -24,7 +24,7 @@
 - [x] **GEN-07**: 스킬은 만든 세트를 검사 스크립트로 확인하고, 통과하지 못하면 고쳐서 다시 검사한다
 - [x] **GEN-08**: 업로드 파일이 있으면 노션 기록과 함께 재료로 쓰고 해설 출처에 파일명을 표시하며, 없으면 노션 기록만으로 구성한다. 엑셀(.xlsx)이나 글자가 깨지는 한글 CSV(CP949)는 "CSV UTF-8"로 다시 저장해 달라고 요청한다 (2026-10-17 가벼운 방식)
 - [x] **GEN-09**: 그 주 기록이 너무 적으면(기록 6개 또는 작성자 3명 미만) 스킬이 승환에게 알리고 진행 여부를 묻는다
-- [ ] **GEN-10**: 스킬은 통과한 세트를 주차 목록에 추가하고 커밋·푸시까지 해서 사이트에 올린다 (승환 확인 후)
+- [x] **GEN-10**: 스킬은 통과한 세트를 주차 목록에 추가하고 커밋·푸시까지 해서 사이트에 올린다 (승환 확인 후)
 
 ### Quiz (풀이)
 
@@ -59,8 +59,8 @@
 
 ### Deploy (공유)
 
-- [ ] **DPLY-01**: 사이트는 GitHub 공개 저장소의 GitHub Pages로 배포되고, 링크 하나로 6명이 접속한다
-- [ ] **DPLY-02**: 승환용 주간 루틴 안내(노션 내보내기 → 퀴즈 만들기 → 링크 공유 → 결과 반영)가 README에 있다
+- [x] **DPLY-01**: 사이트는 GitHub 공개 저장소의 GitHub Pages로 배포되고, 링크 하나로 6명이 접속한다
+- [x] **DPLY-02**: 승환용 주간 루틴 안내(노션 내보내기 → 퀴즈 만들기 → 링크 공유 → 결과 반영)가 README에 있다
 
 ### Design (화면)
 
@@ -117,9 +117,9 @@
 | GEN-07 | Phase 2 | Complete |
 | GEN-08 | Phase 2 | Complete |
 | GEN-09 | Phase 2 | Complete |
-| GEN-10 | Phase 3 | Pending |
-| DPLY-01 | Phase 3 | Pending |
-| DPLY-02 | Phase 3 | Pending |
+| GEN-10 | Phase 3 | Complete |
+| DPLY-01 | Phase 3 | Complete |
+| DPLY-02 | Phase 3 | Complete |
 | REVW-01 | Phase 4 | Pending |
 | REVW-03 | Phase 4 | Pending |
 | REVW-04 | Phase 4 | Pending |
