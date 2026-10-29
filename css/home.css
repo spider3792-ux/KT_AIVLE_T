@@ -54,7 +54,7 @@
 }
 
 .hero h1 {
-  font-size: clamp(96px, 10vw, 160px);
+  font-size: clamp(67px, 7vw, 112px);
   line-height: 1.05;
   letter-spacing: -0.02em;
 }
@@ -298,35 +298,18 @@
 }
 
 /* ---------- preview frame ----------
-   One fixed frame: a subject plate on the left, the pointed-at member's entries on the right. */
+   One fixed frame with the pointed-at member's entries. */
 
 .preview {
   display: grid;
   grid-area: preview;
-  grid-template-columns: 180px minmax(0, 1fr);
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr);
   align-self: start;
   height: 280px;
   padding: 20px;
   overflow: hidden;
   background: var(--surface);
   color: var(--ink);
-}
-
-.preview-plate {
-  align-self: start;
-  background: var(--bg);
-}
-
-.preview-plate img {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity var(--t-ui) ease;
-}
-
-.preview-plate img.is-on {
-  opacity: 1;
 }
 
 .preview-body {
@@ -397,8 +380,7 @@
   }
 
   .preview {
-    grid-template-columns: 96px minmax(0, 1fr);
-    gap: 16px;
+    grid-template-columns: minmax(0, 1fr);
     height: auto;
     max-height: 360px;
     margin-bottom: 24px;
@@ -428,7 +410,7 @@
   }
 
   .hero h1 {
-    font-size: 15vw;
+    font-size: 10.5vw;
   }
 
   .hero-sub {
@@ -468,8 +450,7 @@
 @media (prefers-reduced-motion: reduce) {
   .tab,
   .member span,
-  .member span::before,
-  .preview-plate img {
+  .member span::before {
     transition: none;
   }
 
@@ -514,16 +495,6 @@
   height: 0;
 }
 
-.tip {
-  margin: 0;
-}
-
-.tip figcaption {
-  padding-top: 8px;
-  font-size: var(--step-small);
-  line-height: 1.4;
-}
-
 /* ---------- 출처: giant word, filled bars ---------- */
 
 .sources {
@@ -531,13 +502,16 @@
 }
 
 .sources-col {
-  grid-column: 1 / 6;
-  container-type: inline-size;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  column-gap: var(--col-gap);
+  align-items: start;
 }
 
 .giant {
-  margin: 0 0 20px;
-  font-size: 49cqw;
+  margin: 0;
+  font-size: clamp(5rem, 14vw, 13rem);
   font-weight: 500;
   line-height: 1.12;
   letter-spacing: -0.04em;
@@ -675,41 +649,6 @@
   color: var(--tone-1);
 }
 
-.sources-plates {
-  grid-column: 7 / 13;
-  padding-top: 16px;
-}
-
-.sources-note {
-  max-width: 26ch;
-  font-size: var(--step-lead);
-  line-height: 1.4;
-}
-
-.plate-pair {
-  display: grid;
-  grid-template-columns: 11fr 9fr;
-  gap: var(--col-gap);
-  align-items: start;
-  margin-top: 40px;
-}
-
-.plate-pair .tip-b {
-  margin-top: 96px;
-}
-
-.tip figcaption {
-  color: var(--tone-1);
-}
-
-.tip-a .plate img {
-  object-position: 50% 8%;
-}
-
-.tip-b .plate img {
-  object-position: 85% 50%;
-}
-
 /* ---------- 순서: itinerary on a slip ---------- */
 
 .how {
@@ -730,14 +669,6 @@
   margin-top: 28px;
   font-size: var(--step-body);
   line-height: 1.55;
-}
-
-.how .tip {
-  margin-top: 56px;
-}
-
-.how .tip figcaption {
-  color: var(--ink);
 }
 
 .slip {
@@ -948,10 +879,8 @@
 
 .card-body {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 56px;
-  min-height: 376px;
-  padding: 24px 56px 40px;
+  grid-template-columns: minmax(0, 1fr);
+  padding: 32px 56px 40px;
   background: var(--bg);
 }
 
@@ -967,64 +896,9 @@
   line-height: 1.55;
 }
 
-.card-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.stamp {
-  align-self: flex-end;
-  width: 88px;
-  margin: 0 0 28px;
-  padding: 6px;
-  background: var(--surface);
-}
-
-.card-links {
-  display: grid;
-  gap: 12px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.card-links a {
-  display: inline-block;
-  font-size: var(--step-body);
-  font-weight: 500;
-  text-decoration: underline;
-  text-decoration-color: transparent;
-  text-decoration-thickness: 0.07em;
-  transition: transform var(--t-hover) var(--ease-out), text-decoration-color var(--t-hover) ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .card-links a:hover {
-    text-decoration-color: currentColor;
-    transform: translateX(6px);
-  }
-}
-
-.card-links a:active {
-  transform: translateX(2px);
-}
-
-.credits {
-  grid-column: 1 / -1;
-  max-width: 72ch;
-  margin-top: 40px;
-  font-size: 1rem;
-  line-height: 1.55;
-}
-
-.credits a {
-  text-decoration-color: currentColor;
-}
-
 .imprint {
   grid-column: 1 / -1;
-  margin-top: 24px;
+  margin-top: 56px;
   font-size: var(--step-small);
   text-align: center;
 }
@@ -1032,15 +906,13 @@
 /* ---------- motion: each section arrives in its own manner (once, then still) ---------- */
 
 @media (prefers-reduced-motion: no-preference) {
-  /* bars arrive row by row from the left, plates settle, the slip is pulled out, spines stand up */
+  /* bars arrive row by row from the left, the slip is pulled out, spines stand up */
   .js [data-reveal="bar"] { translate: -32px 0; }
-  .js [data-reveal="plate"] { translate: 0 40px; }
   .js [data-reveal="slip"] { translate: 0 56px; }
   .js [data-reveal="row"] { translate: 0 14px; }
   .js [data-reveal="spine"] { translate: 0 64px; }
 
   .js [data-reveal="bar"].is-in { animation-name: arrive-left; animation-duration: 700ms; }
-  .js [data-reveal="plate"].is-in { animation-name: arrive-plate; animation-duration: 1000ms; }
   .js [data-reveal="slip"].is-in { animation-name: arrive-slip; animation-duration: 900ms; }
   .js [data-reveal="row"].is-in { animation-name: arrive-row; animation-duration: 500ms; }
   .js [data-reveal="spine"].is-in { animation-name: arrive-spine; animation-duration: 800ms; }
@@ -1049,24 +921,10 @@
   .js [data-reveal]:not(.is-in):not([data-reveal="load"]) {
     animation: reveal-failsafe 1ms linear 6s forwards;
   }
-
-  /* one moving picture: the census form drifts a few percent inside its frame as it passes */
-  @supports (animation-timeline: view()) {
-    .plate--drift img {
-      transform: scale(1.14);
-      animation: plate-drift linear both;
-      animation-timeline: view();
-      animation-range: entry 0% exit 100%;
-    }
-  }
 }
 
 @keyframes arrive-left {
   from { opacity: 0; translate: -32px 0; }
-}
-
-@keyframes arrive-plate {
-  from { opacity: 0; translate: 0 40px; }
 }
 
 @keyframes arrive-slip {
@@ -1079,11 +937,6 @@
 
 @keyframes arrive-spine {
   from { opacity: 0; translate: 0 64px; }
-}
-
-@keyframes plate-drift {
-  from { transform: scale(1.14) translateY(-5%); }
-  to { transform: scale(1.14) translateY(5%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1119,28 +972,19 @@
   }
 
   .sources-col,
-  .sources-plates,
   .how-text,
   .slip {
     grid-column: 1;
   }
 
   .sources-col {
+    grid-template-columns: minmax(0, 1fr);
     max-width: 640px;
   }
 
-  .sources-plates {
-    max-width: 640px;
-    padding-top: 0;
-    margin-top: 72px;
-  }
-
-  .plate-pair {
-    margin-top: 28px;
-  }
-
-  .plate-pair .tip-b {
-    margin-top: 72px;
+  .giant {
+    margin-bottom: 20px;
+    font-size: clamp(4.5rem, 24vw, 9rem);
   }
 
   .how-text {
@@ -1171,25 +1015,6 @@
     padding: 16px var(--gutter) 40px;
   }
 
-  .stamp {
-    position: absolute;
-    top: 16px;
-    right: var(--gutter);
-    width: 64px;
-    margin: 0;
-  }
-
-  .card-left {
-    padding-right: 80px;
-  }
-
-  .card-right {
-    margin-top: 32px;
-  }
-
-  .credits {
-    margin-top: 40px;
-  }
 }
 
 @media (max-width: 699px) {
@@ -1259,7 +1084,4 @@
     padding-inline: 20px;
   }
 
-  .card-links a {
-    font-size: 1.0625rem;
-  }
 }

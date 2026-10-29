@@ -66,19 +66,8 @@ export default async function home(kit) {
   const pressed = await page.eval((m) => document.querySelector(`.tab[data-member="${m}"]`).getAttribute('aria-pressed'), author);
   assert.equal(pressed, 'true', 'the pointed-at tab is aria-pressed');
 
-  // the frame's plate: an assets/ picture with Korean alt text that really loads
-  await kit.waitFor(page, () => {
-    const img = document.querySelector('#preview img.is-on');
-    return img && img.naturalWidth > 0;
-  });
-  const plate = await page.eval(() => {
-    const img = document.querySelector('#preview img.is-on');
-    return { src: img.getAttribute('src'), alt: img.alt, width: img.naturalWidth, opacity: getComputedStyle(img).opacity };
-  });
-  assert.match(plate.src, /^assets\//);
-  assert.ok(plate.alt.trim().length > 0, 'plate alt is empty');
-  assert.match(plate.alt, /[가-힣]/, 'plate alt is Korean');
-  assert.ok(plate.width > 0);
+  // the frame is text only: no picture in the preview (decorative photos removed 2026-10-29)
+  assert.equal(await page.eval(() => document.querySelectorAll('#preview img').length), 0, 'the preview holds no picture');
   await kit.shot(page, 'home-desktop-preview');
 
   // keyboard focus shows another member's entries
@@ -109,10 +98,8 @@ export default async function home(kit) {
   await page.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
   await kit.waitFor(page, () => document.querySelector('#preview').dataset.state === 'idle', { timeout: 3000 });
 
-  // every picture on the page has alt text
-  const imgs = await page.eval(() => [...document.images].map((i) => ({ src: i.getAttribute('src'), alt: i.alt })));
-  assert.ok(imgs.length > 0, 'no pictures after the preview ran');
-  for (const i of imgs) assert.ok(i.alt.trim().length > 0, `img ${i.src} has no alt`);
+  // no decorative photos anywhere on the page
+  assert.equal(await page.eval(() => document.images.length), 0, 'the home page shows no pictures');
 
   // the name picker still feeds 풀기 시작
   await kit.chooseMember(page, members[0].name);
@@ -162,41 +149,23 @@ export default async function home(kit) {
     assert.ok(s.label.startsWith(`${i + 1}번 문제`), `spine ${i + 1} aria-label: ${s.label}`);
   });
 
-  // at least four different real pictures are really visible (loaded, opaque, 160x120 or larger) at 1440
-  const pictures = await page.eval(() =>
-    [...document.images]
-      .filter((i) => i.naturalWidth > 0 && i.offsetWidth >= 160 && i.offsetHeight >= 120 && getComputedStyle(i).opacity !== '0' && getComputedStyle(i).visibility !== 'hidden')
-      .map((i) => i.getAttribute('src')),
-  );
-  assert.ok(new Set(pictures).size >= 4, `only ${new Set(pictures).size} real pictures visible at 1440: ${pictures}`);
   await kit.shot(page, 'home-desktop-full');
 
 
   // ---------------------------------------------------------------- the back of the card, credits, reduced motion (01-04)
-  // every picture under assets/ that the page shows is named in the credits paragraph
-  const credits = await (await fetch(`${kit.BASE}/assets/credits.json`)).json();
-  const shown = await page.eval(() => [...document.images].map((i) => i.getAttribute('src')).filter((s) => s && s.startsWith('assets/')));
-  const creditText = await page.eval(() => document.querySelector('footer .credits')?.textContent || '');
-  assert.ok(creditText.length > 0, 'no credits paragraph in the footer');
-  assert.ok(shown.length >= 4, `only ${shown.length} assets/ pictures on the page`);
-  for (const src of new Set(shown)) {
-    const c = credits.find((x) => x.file === src);
-    assert.ok(c, `${src} has no entry in assets/credits.json`);
-    assert.ok(creditText.includes(c.title.slice(0, 60)), `the credits paragraph does not name "${c.title.slice(0, 60)}" (${src})`);
-  }
+  // no photo credits and no in-page link list in the footer; the sheet stays reachable from 풀기 시작 and the spines
+  assert.equal(await page.eval(() => !!document.querySelector('.credits')), false, 'no credits paragraph');
+  assert.equal(await page.eval(() => document.querySelectorAll('#back a').length), 0, 'the footer holds no links');
+  assert.ok(await page.eval(() => !!document.querySelector('#start') && document.querySelectorAll('#shelf a[href*="quiz.html"]').length > 0), 'an entry path to the sheet remains');
   // every credit link is same-tab, or opens with rel="noopener noreferrer"
   const blank = await page.eval(() => [...document.querySelectorAll('a[target="_blank"]')].filter((a) => !/noopener/.test(a.rel) || !/noreferrer/.test(a.rel)).map((a) => a.href));
   assert.deepEqual(blank, [], 'target=_blank links without rel="noopener noreferrer"');
 
   const links = await page.eval(() => ({
-    quiz: document.querySelector('#card-quiz')?.getAttribute('href'),
-    targets: ['#sources', '#how', '#contents'].map((h) => [h, !!document.querySelector(`#back a[href="${h}"]`) && !!document.querySelector(h)]),
     imprint: document.querySelector('#back .imprint')?.textContent || '',
     imprintSize: parseFloat(getComputedStyle(document.querySelector('#back .imprint')).fontSize),
   }));
-  assert.match(links.quiz, new RegExp(`quiz\\.html\\?set=${data.index[0].id}$`), 'the footer sheet link carries ?set=');
-  for (const [h, ok] of links.targets) assert.ok(ok, `footer link ${h} does not resolve to a section`);
-  assert.ok(links.imprint.includes('샘플 데이터로 만든 화면'), 'the imprint names the sample data');
+  assert.ok(links.imprint.includes('스터디 복습 퀴즈'), 'the imprint names the site');
   assert.ok(links.imprintSize >= 13, `imprint is ${links.imprintSize}px`);
 
   // a spine answers the pointer: it turns to full ink

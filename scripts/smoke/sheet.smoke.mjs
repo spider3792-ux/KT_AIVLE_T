@@ -1,11 +1,10 @@
-// Exam sheet scenario (taking state): structure, phone targets and overflow, entrances, tipped-in plates.
+// Exam sheet scenario (taking state): structure, phone targets and overflow, entrances, no decorative photos.
 // Run with: node scripts/smoke.mjs sheet
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 export const name = 'sheet';
 
-const credits = JSON.parse(readFileSync(fileURLToPath(new URL('../../assets/credits.json', import.meta.url)), 'utf8'));
 
 export default async function sheet(kit) {
   const { assert, data } = kit;
@@ -51,44 +50,10 @@ export default async function sheet(kit) {
   assert.equal(shape.noteText, '제출하면 첫 시도 답이 고정돼요.');
   await kit.shot(page, 'sheet-desktop');
 
-  // ---------------------------------------------------------------- plates at 1440
-  // Scroll to the bottom and back so lazily loaded pictures arrive.
-  await page.eval(() => {
-    window.scrollTo(0, document.documentElement.scrollHeight);
-    return true;
-  });
-  await kit.sleep(900);
-  await page.eval(() => {
-    window.scrollTo(0, 0);
-    return true;
-  });
-  await kit.sleep(600);
-  const pics = await page.eval(() => {
-    const rect = (n) => {
-      const r = n.getBoundingClientRect();
-      return { x: r.left + scrollX, y: r.top + scrollY, w: r.width, h: r.height };
-    };
-    const avoid = [...document.querySelectorAll('#sheet-title, legend, label, pre.code, .q-prompt, #submit')].map(rect);
-    const imgs = [...document.querySelectorAll('img')]
-      .filter((i) => /\/assets\//.test(i.src))
-      .map((i) => ({ src: i.getAttribute('src'), nat: i.naturalWidth, ...rect(i), alt: i.alt }));
-    const hit = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-    return {
-      imgs: imgs.map((i) => ({ ...i, overlaps: avoid.filter((b) => hit(i, b)).length })),
-      credits: document.querySelector('p.credits')?.textContent ?? '',
-      scrollWidth: document.documentElement.scrollWidth,
-      innerWidth,
-    };
-  });
-  const good = pics.imgs.filter((i) => i.nat > 0 && i.w >= 160 && i.h >= 120);
-  assert.ok(good.length >= 4, `at least four plates at 160x120 or more, found ${good.length}: ${JSON.stringify(pics.imgs.map((i) => [i.src, i.nat, Math.round(i.w), Math.round(i.h)]))}`);
-  for (const i of good) {
-    assert.equal(i.overlaps, 0, `${i.src} overlaps the title, a prompt, a choice, code or the submit button`);
-    assert.match(i.alt, /[가-힣]/, `${i.src}: alt is Korean`);
-    const entry = credits.find((c) => i.src.endsWith(c.file));
-    assert.ok(entry, `${i.src} is listed in assets/credits.json`);
-    assert.ok(pics.credits.includes(entry.title), `p.credits names "${entry.title}"`);
-  }
+  // ---------------------------------------------------------------- no photos at 1440
+  const pics = await page.eval(() => ({ imgs: document.images.length, credits: !!document.querySelector('p.credits'), scrollWidth: document.documentElement.scrollWidth, innerWidth }));
+  assert.equal(pics.imgs, 0, 'the sheet shows no pictures');
+  assert.equal(pics.credits, false, 'no credits paragraph');
   assert.ok(pics.scrollWidth <= pics.innerWidth, `desktop overflow ${pics.scrollWidth} > ${pics.innerWidth}`);
 
   // ---------------------------------------------------------------- phone 390x844
@@ -103,7 +68,6 @@ export default async function sheet(kit) {
     select: document.querySelector('#sheet-member').getBoundingClientRect().height,
     inputs: [...document.querySelectorAll('input[type="text"]')].map((i) => parseFloat(getComputedStyle(i).fontSize)),
     pres: [...document.querySelectorAll('pre.code')].map((p) => ({ sw: p.scrollWidth, cw: p.clientWidth, ox: getComputedStyle(p).overflowX })),
-    plates: [...document.querySelectorAll('.sheet-plate')].filter((p) => p.getBoundingClientRect().width > 0 && p.closest('li')).length,
     titleLines: Math.round(document.querySelector('#sheet-title').getBoundingClientRect().height / parseFloat(getComputedStyle(document.querySelector('#sheet-title')).lineHeight)),
   }));
   assert.ok(small.scrollWidth <= small.innerWidth, `phone overflow ${small.scrollWidth} > ${small.innerWidth}`);
@@ -116,7 +80,6 @@ export default async function sheet(kit) {
     assert.ok(p.sw >= p.cw, 'code block scrolls inside itself');
     assert.equal(p.ox, 'auto');
   }
-  assert.equal(small.plates, 0, 'ground plates are not rendered on a phone');
   assert.ok(small.titleLines <= 2, `title runs ${small.titleLines} lines at 390`);
 
   await kit.chooseMember(phone, members[0].name);

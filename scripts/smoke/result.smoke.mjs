@@ -379,38 +379,9 @@ export default async function result(kit) {
   const still = await ignored.eval(() => ({ score: !!document.querySelector('#score'), submit: !!document.querySelector('#submit') }));
   assert.deepEqual(still, { score: false, submit: true }, 'any other review value is ignored');
 
-  // ---------------------------------------------------------------- (h) pictures of the graded sheet at 1440
-  const credits = JSON.parse(await (await fetch(`${kit.BASE}/assets/credits.json`)).text());
-  const pics = await graded.eval(() => {
-    const rect = (n) => {
-      const r = n.getBoundingClientRect();
-      return { x: r.left + scrollX, y: r.top + scrollY, w: r.width, h: r.height };
-    };
-    const avoid = [...document.querySelectorAll('h1, h2, legend, label, pre.code, .q-prompt, .q-result, #score > :not(figure)')].map(rect);
-    const hit = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-    const imgs = [...document.querySelectorAll('img')]
-      .filter((i) => /\/assets\//.test(i.src))
-      .map((i) => ({ src: i.getAttribute('src'), nat: i.naturalWidth, alt: i.alt, ...rect(i) }));
-    return {
-      imgs: imgs.map((i) => ({ ...i, overlaps: avoid.filter((b) => hit(i, b)).length })),
-      credits: document.querySelector('p.credits')?.textContent ?? '',
-      scoreImg: !!document.querySelector('#score > figure img'),
-    };
-  });
-  const seen = pics.imgs.filter((i) => i.nat > 0 && i.w >= 160 && i.h >= 120);
-  assert.ok(seen.length >= 4, `at least four plates in the graded state, found ${seen.length}`);
-  assert.ok(pics.scoreImg, 'a plate sits beside the score summary');
-  for (const i of seen) {
-    assert.equal(i.overlaps, 0, `${i.src} lies over text in the graded state`);
-    assert.match(i.alt, /[가-힣]/, `${i.src}: alt is Korean`);
-    const entry = credits.find((c) => i.src.endsWith(c.file));
-    assert.ok(entry, `${i.src} is in assets/credits.json`);
-    assert.ok(pics.credits.includes(entry.title.slice(0, 60)), `p.credits names "${entry.title.slice(0, 40)}"`);
-  }
-  // The credits paragraph names exactly the pictures the page holds, no more and no fewer.
-  const heldFiles = new Set(pics.imgs.map((i) => i.src.split('/').pop()));
-  const namedFiles = credits.filter((c) => pics.credits.includes(c.title.slice(0, 60))).map((c) => c.file.split('/').pop());
-  assert.deepEqual([...namedFiles].sort(), [...heldFiles].sort(), 'p.credits names exactly the pictures of the graded sheet');
+  // ---------------------------------------------------------------- (h) the graded sheet shows no photos and no credits
+  const pics = await graded.eval(() => ({ imgs: document.images.length, credits: !!document.querySelector('p.credits'), scoreFigure: !!document.querySelector('#score figure') }));
+  assert.deepEqual(pics, { imgs: 0, credits: false, scoreFigure: false }, 'no pictures in the graded state');
 
   // Reduced motion: the graded sheet is simply there, nothing stays hidden.
   const calm = await kit.open(`quiz.html?set=${set.id}&review=graded`, { width: 1440, height: 900, reducedMotion: true });
