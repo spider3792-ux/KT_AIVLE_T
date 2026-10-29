@@ -1,7 +1,7 @@
 // Home controller: this week's title from the index, the member tabs on the folder stack, the name
 // picker, 풀기 시작. The folder (fieldset, #start, #start-hint) is static markup in index.html;
 // this script fills and wires it.
-import { el, loadMembers, loadWeek, renderError, store } from './site.js';
+import { el, getJson, loadMembers, loadWeek, renderError, store } from './site.js';
 import { sourceLabel } from './grade.js';
 import { reveal, stagger } from './motion.js';
 
@@ -250,6 +250,45 @@ function renderShelf(set, entry) {
   shelf.replaceChildren(...spines);
 }
 
+// The bookshelf: every week in quizzes/index.json is one book lying flat, newest on top.
+// A new week needs nothing here: publishing adds it to the index and it lands on the pile.
+async function renderPile(weeks, current) {
+  const pile = document.querySelector('#pile');
+  const valid = weeks.filter((w) => w && WEEK_ID.test(w.id) && typeof w.file === 'string' && /^quizzes\/[A-Za-z0-9._-]+\.json$/.test(w.file));
+  // Each set is read for its range and subjects; a week whose file fails still shows its title.
+  const sets = await Promise.all(valid.map((w) => (w.id === current.entry.id ? current.set : getJson(w.file).catch(() => null))));
+  const books = valid.map((w, i) => {
+    const set = sets[i];
+    const dated = set && set.range && set.range.from && set.range.to;
+    const from = dated ? monthDay(set.range.from) : '';
+    const to = dated ? monthDay(set.range.to) : '';
+    const subjects = set && Array.isArray(set.sources) ? [...new Set(set.sources.map((s) => s.subject).filter(Boolean))] : [];
+    const count = set && Array.isArray(set.questions) ? set.questions.length : 0;
+    const attempt = store.get('attempt:' + w.id);
+    const score = attempt && attempt.score && Number.isInteger(attempt.score.total) ? attempt.score.total : null;
+    const mine = score == null ? '아직 안 풀었어요' : `내 점수 ${score} / ${count || '?'}`;
+    const facts = [from && to ? `${from}–${to}` : '', count ? `${count}문제` : '', subjects.join(' · ')].filter(Boolean).join(' · ');
+    return el(
+      'li',
+      { attrs: { 'data-reveal': 'book' } },
+      el(
+        'a',
+        {
+          class: 'book',
+          dataset: { tone: i === 0 ? 'top' : (i % 3) + 1 },
+          attrs: { href: 'quiz.html?set=' + encodeURIComponent(w.id), 'aria-label': [w.title, i === 0 ? '이번 주' : '', facts, mine].filter(Boolean).join(', ') },
+        },
+        el('span', { class: 'book-title', text: w.title || w.id }),
+        el('span', { class: 'book-facts', text: (i === 0 ? '이번 주 · ' : '') + facts }),
+        el('span', { class: 'book-mine', text: mine }),
+      ),
+    );
+  });
+  pile.replaceChildren(...books);
+  stagger(pile, '[data-reveal]');
+  reveal(pile);
+}
+
 // The card back: a message from the week's numbers and the sheet link.
 function renderCard(set, entry) {
   const authors = new Set(set.sources.map((s) => s.author)).size;
@@ -266,6 +305,7 @@ function numberEntrances() {
   within('#sources .sources-col', '[data-reveal]');
   within('#how', '[data-reveal]');
   within('#contents', '[data-reveal]');
+  within('#weeks .weeks-head', '[data-reveal]');
   within('#back', '[data-reveal]');
 }
 
@@ -285,7 +325,7 @@ async function start() {
     });
     return;
   }
-  const { entry, set } = week;
+  const { weeks, entry, set } = week;
 
   const authors = new Set(set.sources.map((s) => s.author));
   sub.replaceChildren(
@@ -312,6 +352,7 @@ async function start() {
   renderSlip(set, entry);
   renderShelf(set, entry);
   renderCard(set, entry);
+  renderPile(weeks, week);
   numberEntrances();
 
   // The tabs arrive after their bands.

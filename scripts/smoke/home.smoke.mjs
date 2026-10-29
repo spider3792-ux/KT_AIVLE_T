@@ -128,9 +128,23 @@ export default async function home(kit) {
     total: document.querySelector('#how .slip-total')?.textContent || '',
     totalBg: document.querySelector('#how .slip-total') ? getComputedStyle(document.querySelector('#how .slip-total')).backgroundColor : '',
     spines: [...document.querySelectorAll('#contents #shelf a')].map((a) => ({ href: a.getAttribute('href'), label: a.getAttribute('aria-label') })),
-    sections: ['sources', 'how', 'contents', 'back'].map((id) => !!document.getElementById(id)),
+    sections: ['sources', 'how', 'contents', 'weeks', 'back'].map((id) => !!document.getElementById(id)),
+    books: [...document.querySelectorAll('#pile a.book')].map((a) => ({ href: a.getAttribute('href'), text: a.textContent })),
+    pastLink: (() => {
+      const a = document.querySelector('#past-weeks');
+      return a && !a.hidden ? a.getAttribute('href') : '';
+    })(),
   }));
-  assert.deepEqual(below.sections, [true, true, true, true], 'sections #sources #how #contents #back exist');
+  assert.deepEqual(below.sections, [true, true, true, true, true], 'sections #sources #how #contents #weeks #back exist');
+  // the bookshelf: one book per published week, newest on top, reachable from the header
+  assert.equal(below.books.length, data.index.length, 'one book per week in quizzes/index.json');
+  below.books.forEach((b, i) => {
+    assert.equal(b.href, `quiz.html?set=${data.index[i].id}`, `book ${i + 1} href`);
+    assert.ok(b.text.includes(data.index[i].title), `book ${i + 1} lacks its title`);
+    assert.ok(b.text.includes('아직 안 풀었어요'), `book ${i + 1} without an attempt: ${b.text}`);
+  });
+  assert.ok(below.books[0].text.includes('이번 주'), 'the top book is this week');
+  assert.equal(below.pastLink, '#weeks', 'the header link points to the bookshelf');
   assert.equal(below.bars.length, members.length, 'one details bar per member');
   assert.deepEqual(below.bars.map((b) => b.name), members.map((m) => m.name), 'bars follow members.json order');
   assert.deepEqual(below.bars.map((b) => b.open), below.bars.map((_, i) => i === 0), 'only the first bar is open');

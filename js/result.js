@@ -25,6 +25,8 @@ export function renderScore(attempt, set) {
   const day = monthDay(attempt.submittedAt);
   const who = attempt.sample
     ? '견본 채점 화면 · 저장되지 않아요'
+    : attempt.practice
+    ? `${attempt.member ? attempt.member + '의 ' : ''}다시 풀기 · 기록에 남지 않아요`
     : `${attempt.member || '이름 없음'}의 첫 시도${day ? ` · ${day} 제출` : ''}`;
   return el(
     'section',

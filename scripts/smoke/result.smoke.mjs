@@ -402,6 +402,41 @@ export default async function result(kit) {
   assert.equal(landedAt.hash, '#q9');
   assert.ok(landedAt.inside, 'the focus is inside li#q9 after following the spine');
 
+  // ---------------------------------------------------------------- (k) practice: a fresh sheet graded in memory, nothing stored
+  const practice = await kit.open(`quiz.html?set=${set.id}&practice=1`, { width: 1440, height: 900 });
+  await kit.waitFor(practice, () => document.querySelectorAll('li.q').length > 0);
+  await kit.chooseMember(practice, who);
+  await fill(practice, set, mixed);
+  await sleep(500);
+  await kit.submitSheet(practice);
+  await kit.waitFor(practice, () => document.querySelector('#score'));
+  const pr = await practice.eval(() => ({
+    keys: Object.keys(localStorage).filter((k) => /^srq:(attempt|draft):/.test(k)),
+    member: document.querySelector('#attempt-member')?.textContent || '',
+    total: document.querySelector('[data-score="total"]')?.textContent,
+    again: document.querySelector('#practice-link')?.getAttribute('href') || '',
+  }));
+  assert.deepEqual(pr.keys, [], 'practice stores no attempt and no draft');
+  assert.ok(pr.member.includes('다시 풀기') && pr.member.includes(who), `practice score line: ${pr.member}`);
+  assert.equal(pr.total, '5');
+  assert.ok(pr.again.endsWith(`?set=${set.id}&practice=1`), `다시 풀어 보기 href: ${pr.again}`);
+
+  // ---------------------------------------------------------------- (l) the bookshelf carries the week's own score once it is taken
+  const taken = await kit.open('quiz.html', { width: 1440, height: 900 });
+  await kit.waitFor(taken, () => document.querySelectorAll('li.q').length > 0);
+  await kit.chooseMember(taken, who);
+  await fill(taken, set, mixed);
+  await sleep(500);
+  await kit.submitSheet(taken);
+  await kit.waitFor(taken, () => document.querySelector('#score') && document.querySelector('#practice-link'));
+  await taken.eval(() => {
+    location.assign('index.html');
+    return true;
+  });
+  await kit.waitFor(taken, () => document.querySelectorAll('#pile a.book').length > 0);
+  const book = await taken.eval(() => document.querySelector('#pile a.book').textContent);
+  assert.ok(book.includes('내 점수 5 / 10'), `the top book shows the score: ${book}`);
+
   // ---------------------------------------------------------------- (j) every visible label is Korean (DSGN-02)
   // Data (choice texts, question prompts, code, member names) is exempt; controls, headings and field labels are not.
   const sweep = () => {

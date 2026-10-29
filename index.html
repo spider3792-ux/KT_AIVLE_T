@@ -16,7 +16,7 @@
 <body class="home">
   <header class="home-top" data-reveal="load">
     <a class="wordmark" href="index.html">스터디 복습 퀴즈</a>
-    <a id="past-weeks" class="text-link" href="index.html" hidden>지난 주차</a>
+    <a id="past-weeks" class="text-link" href="#weeks">지난 시험지</a>
   </header>
   <main>
     <section class="hero">
@@ -65,6 +65,15 @@
       <div class="shelf-wrap">
         <ol id="shelf" class="shelf"></ol>
       </div>
+    </section>
+
+    <section id="weeks" class="weeks" aria-labelledby="weeks-title">
+      <div class="weeks-head">
+        <h2 id="weeks-title" data-reveal>지난 시험지</h2>
+        <p class="weeks-note" data-reveal>금요일마다 한 권씩 위에 쌓여요. 책을 누르면 그 주 시험지가 열리고, 푼 주는 결과와 다시 풀기가 나와요.</p>
+      </div>
+      <ol id="pile" class="pile"></ol>
+      <div class="pile-board" aria-hidden="true"></div>
     </section>
   </main>
 

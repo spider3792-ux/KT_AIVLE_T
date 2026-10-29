@@ -9,6 +9,8 @@ const params = new URLSearchParams(location.search);
 const requestedId = params.get('set') || '';
 // quiz.html?set=ID&review=graded: the graded sheet from a fixed mixed pattern, in memory only (any other value is ignored).
 const review = params.get('review') === 'graded';
+// quiz.html?set=ID&practice=1: a fresh sheet graded in memory; the frozen first attempt and the draft are never read or written.
+const practice = !review && params.get('practice') === '1';
 
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -209,7 +211,7 @@ function render(set, members) {
     'div',
     { class: 'submit-block' },
     submit,
-    el('div', { class: 'stub-text' }, el('p', { class: 'stub-note', text: '제출하면 첫 시도 답이 고정돼요.' }), status),
+    el('div', { class: 'stub-text' }, el('p', { class: 'stub-note', text: practice ? '다시 풀기예요. 채점만 하고 기록은 남기지 않아요.' : '제출하면 첫 시도 답이 고정돼요.' }), status),
   );
 
   // The design-review view never touches storage, not even to read the remembered name.
@@ -270,6 +272,20 @@ function render(set, members) {
     const answers = sampleAnswers(set);
     const graded = gradeSet(set, answers);
     showGraded(set, { member: null, submittedAt: null, answers, results: graded.results, score: graded.score, sample: true }, { focus: false, animate: true });
+    return;
+  }
+
+  if (practice) {
+    focusFromHash();
+    submit.addEventListener('click', () => {
+      status.textContent = '';
+      const answers = readAnswers(set);
+      const blanks = set.questions.filter((q) => isBlank(q, answers[q.id])).length;
+      confirmSubmit(blanks, () => {
+        const graded = gradeSet(set, answers);
+        showGraded(set, { member: select.value || null, submittedAt: null, answers, results: graded.results, score: graded.score, practice: true }, { focus: true });
+      });
+    });
     return;
   }
 
@@ -450,6 +466,16 @@ function showGraded(set, attempt, { focus, animate = focus }) {
   }
   const submit = document.getElementById('submit');
   if (submit) submit.remove();
+  // Any graded sheet except the design-review view offers a fresh practice round of the same week.
+  if (!attempt.sample && !document.getElementById('practice-link')) {
+    const href = 'quiz.html?set=' + encodeURIComponent(set.id) + '&practice=1';
+    const again = el('a', { class: 'button', text: '다시 풀어 보기', attrs: { id: 'practice-link', href } });
+    if (practice) again.addEventListener('click', (e) => {
+      e.preventDefault();
+      location.replace(href);
+    });
+    document.querySelector('.submit-block').prepend(again);
+  }
   document.getElementById('status').textContent = `채점이 끝났어요. ${set.questions.length}문제 중 ${score.total}문제 정답이에요.`;
 
   if (focus) {

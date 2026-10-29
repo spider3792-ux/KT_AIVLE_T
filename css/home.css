@@ -856,6 +856,111 @@
   transform: translateY(-4px) scale(0.98);
 }
 
+/* ---------- 지난 시험지: whole weeks as books lying flat, newest on top ---------- */
+
+.weeks {
+  padding: var(--section-gap) var(--gutter) clamp(72px, 10vw, 120px);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.weeks-head {
+  display: grid;
+  gap: 16px;
+  max-width: 720px;
+  margin-bottom: 56px;
+}
+
+.weeks h2 {
+  font-size: var(--step-head);
+  letter-spacing: -0.02em;
+}
+
+.weeks-note {
+  max-width: 40ch;
+  font-size: var(--step-body);
+  line-height: 1.55;
+}
+
+.pile {
+  display: grid;
+  justify-items: start;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* each book a little shorter or longer than the one under it, so the stack reads as a stack */
+.pile li {
+  width: min(100%, 1040px);
+}
+
+.pile li:nth-child(3n + 2) {
+  width: min(100%, 980px);
+  margin-left: 28px;
+}
+
+.pile li:nth-child(3n) {
+  width: min(100%, 1010px);
+  margin-left: 10px;
+}
+
+.book {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  column-gap: 40px;
+  min-height: 96px;
+  padding: 20px 32px;
+  background: var(--tone);
+  color: var(--ink);
+  text-decoration: none;
+  transition: transform var(--t-hover) var(--ease-out), background-color var(--t-hover) ease;
+}
+
+.book[data-tone="top"] { --tone: var(--band-2); color: var(--bg); }
+.book[data-tone="1"] { --tone: var(--band-1); }
+.book[data-tone="2"] { --tone: var(--tone-4); }
+.book[data-tone="3"] { --tone: var(--tone-2); }
+
+.book-title {
+  font-size: var(--step-lead);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.book-facts,
+.book-mine {
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.book-mine {
+  font-weight: 600;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .book:hover {
+    transform: translateX(16px);
+  }
+}
+
+.book:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.book:active {
+  transform: translateX(6px);
+}
+
+/* the board the pile rests on */
+.pile-board {
+  height: 28px;
+  margin-inline: calc(var(--gutter) * -1);
+  background: var(--ink);
+}
+
 /* ---------- footer: the back of the card ---------- */
 
 .back {
@@ -911,11 +1016,13 @@
   .js [data-reveal="slip"] { translate: 0 56px; }
   .js [data-reveal="row"] { translate: 0 14px; }
   .js [data-reveal="spine"] { translate: 0 64px; }
+  .js [data-reveal="book"] { translate: 0 -40px; }
 
   .js [data-reveal="bar"].is-in { animation-name: arrive-left; animation-duration: 700ms; }
   .js [data-reveal="slip"].is-in { animation-name: arrive-slip; animation-duration: 900ms; }
   .js [data-reveal="row"].is-in { animation-name: arrive-row; animation-duration: 500ms; }
   .js [data-reveal="spine"].is-in { animation-name: arrive-spine; animation-duration: 800ms; }
+  .js [data-reveal="book"].is-in { animation-name: arrive-book; animation-duration: 700ms; }
 
   /* If the script never runs, below-the-fold parts show themselves after a while instead of staying hidden. */
   .js [data-reveal]:not(.is-in):not([data-reveal="load"]) {
@@ -939,10 +1046,15 @@
   from { opacity: 0; translate: 0 64px; }
 }
 
+@keyframes arrive-book {
+  from { opacity: 0; translate: 0 -40px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .bar,
   .bar-mark::after,
   .spine,
+  .book,
   .card-links a {
     transition: none;
   }
@@ -953,6 +1065,8 @@
 
   .spine:hover,
   .spine:active,
+  .book:hover,
+  .book:active,
   .card-links a:hover,
   .card-links a:active {
     transform: none;
@@ -1018,6 +1132,23 @@
 }
 
 @media (max-width: 699px) {
+  .pile li,
+  .pile li:nth-child(3n + 2),
+  .pile li:nth-child(3n) {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .pile li:nth-child(even) {
+    width: calc(100% - 16px);
+  }
+
+  .book {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 6px;
+    padding: 18px 20px;
+  }
+
   .shelf-wrap {
     padding-bottom: 0;
   }

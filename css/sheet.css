@@ -6,16 +6,13 @@
 .sheet-page {
   --pad-x: clamp(14px, 4vw, 64px);
   --num-w: clamp(2.25rem, 5vw, 3.75rem);
-  --plate-gap: 28px;
   --edge: 10px;
-  --plate-w: clamp(168px, calc((100vw - 780px) / 2 - 48px), 260px);
   padding: 0 clamp(12px, 3vw, 32px) clamp(64px, 10svh, 120px);
 }
 
 /* ---------- the paper ---------- */
 
-/* The paper itself is not clipped (the plates hang out into the ground beside it, and a clip-path on the
-   element would cut them off). Its sides are perforated with a dotted border of 10px round dots in the
+/* The paper itself is not clipped (a clip-path would also cut the focus rings at its edges). Its sides are perforated with a dotted border of 10px round dots in the
    ground colour; its top corners are notched by two triangles of the ground laid over them. */
 .paper {
   position: relative;
@@ -386,6 +383,10 @@ pre.code code {
   order: 1;
 }
 
+#practice-link {
+  text-decoration: none;
+}
+
 .stub-note {
   font-size: 1.0625rem;
   line-height: 1.5;
@@ -647,45 +648,6 @@ pre.code code {
   cursor: default;
 }
 
-/* ---------- plates: small photographs tipped onto the exam ---------- */
-
-.sheet-plate {
-  display: none;
-}
-
-/* Where each picture is cropped to: one ratio, one treatment (the shared .plate), only the window moves. */
-.sheet-plate[data-pic="card"] img {
-  object-position: 18% 50%;
-}
-
-.sheet-plate[data-pic="machines"] img {
-  object-position: 50% 52%;
-}
-
-.sheet-plate[data-pic="nightingale"] img {
-  object-position: 84% 50%;
-}
-
-.sheet-plate[data-pic="playfair"] img {
-  object-position: 6% 55%;
-}
-
-.sheet-plate[data-pic="census-machine"] img {
-  object-position: 50% 45%;
-}
-
-.sheet-plate[data-pic="drawers"] img {
-  object-position: 50% 50%;
-}
-
-.sheet-plate[data-pic="puncher"] img {
-  object-position: 50% 42%;
-}
-
-.sheet-plate[data-pic="census"] img {
-  object-position: 50% 4%;
-}
-
 /* Tablet and up: four short choices sit two by two. */
 @media (min-width: 720px) {
   .sheet-fields {
@@ -703,38 +665,6 @@ pre.code code {
 @media (min-width: 1200px) {
   .paper {
     max-width: 860px;
-  }
-
-  .sheet-plate--left,
-  .sheet-plate--right {
-    position: absolute;
-    display: block;
-    width: var(--plate-w);
-  }
-
-  #sheet > li.q > .sheet-plate--left {
-    top: 0;
-    left: calc(-1 * (var(--num-w) + var(--pad-x) + var(--edge) + var(--plate-gap) + var(--plate-w)));
-  }
-
-  #sheet > li.q > .sheet-plate--right {
-    top: 0;
-    right: calc(-1 * (var(--pad-x) + var(--edge) + var(--plate-gap) + var(--plate-w)));
-  }
-
-  .sheet-head > .sheet-plate--left {
-    top: 12px;
-    left: calc(-1 * (var(--pad-x) + var(--edge) + var(--plate-gap) + var(--plate-w)));
-  }
-
-  #score > .sheet-plate--right {
-    top: 0;
-    right: calc(-1 * (var(--pad-x) + var(--edge) + var(--plate-gap) + var(--plate-w)));
-  }
-
-  .submit-block > .sheet-plate--right {
-    top: 0;
-    right: calc(-1 * (var(--pad-x) + var(--edge) + var(--plate-gap) + var(--plate-w)));
   }
 
   .sheet-page {
