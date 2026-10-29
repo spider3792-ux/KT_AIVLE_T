@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>이번 주 시험지 · 스터디 복습 퀴즈</title>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com; object-src 'none'; base-uri 'self'; form-action 'self'">
   <script src="js/boot.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +16,10 @@
 <body class="home">
   <header class="home-top" data-reveal="load">
     <a class="wordmark" href="index.html">스터디 복습 퀴즈</a>
-    <a id="past-weeks" class="text-link" href="#weeks">지난 시험지</a>
+    <nav class="top-links" aria-label="바로 가기">
+      <a id="notes-link" class="text-link" href="notes.html">오답 노트</a>
+      <a id="past-weeks" class="text-link" href="#weeks">지난 시험지</a>
+    </nav>
   </header>
   <main>
     <section class="hero">

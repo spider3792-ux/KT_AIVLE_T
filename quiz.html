@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>이번 주 시험지 · 스터디 복습 퀴즈</title>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com; object-src 'none'; base-uri 'self'; form-action 'self'">
   <script src="js/boot.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,7 +21,7 @@
     <p class="loading" role="status">시험지를 불러오는 중이에요.</p>
     <noscript><p class="loading">이 시험지는 자바스크립트가 켜져 있어야 풀 수 있어요.</p></noscript>
   </main>
-  <dialog id="confirm" aria-labelledby="confirm-title" aria-describedby="confirm-desc">
+  <dialog id="confirm" class="slip-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-desc">
     <form method="dialog">
       <h2 id="confirm-title">제출할까요?</h2>
       <p id="confirm-desc"><span id="blank-lead"></span><span id="blank-count" hidden></span><span id="blank-tail"></span></p>

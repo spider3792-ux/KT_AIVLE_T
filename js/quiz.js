@@ -3,6 +3,7 @@ import { el, loadMembers, loadWeek, renderError, store } from './site.js';
 import { gradeSet, isBlank, sanitizeAnswers } from './grade.js';
 import { reveal, stagger } from './motion.js';
 import { renderResultBlock, renderScore } from './result.js';
+import { call, endpoint, ensurePin, forgetPin, LOW_RATE, messageFor, rateOf, teamStats } from './team.js';
 
 const app = document.querySelector('#app');
 const params = new URLSearchParams(location.search);
@@ -469,7 +470,7 @@ function showGraded(set, attempt, { focus, animate = focus }) {
   // Any graded sheet except the design-review view offers a fresh practice round of the same week.
   if (!attempt.sample && !document.getElementById('practice-link')) {
     const href = 'quiz.html?set=' + encodeURIComponent(set.id) + '&practice=1';
-    const again = el('a', { class: 'button', text: '다시 풀어 보기', attrs: { id: 'practice-link', href } });
+    const again = el('a', { class: 'button button--quiet', text: '다시 풀어 보기', attrs: { id: 'practice-link', href } });
     if (practice) again.addEventListener('click', (e) => {
       e.preventDefault();
       location.replace(href);
@@ -478,10 +479,72 @@ function showGraded(set, attempt, { focus, animate = focus }) {
   }
   document.getElementById('status').textContent = `채점이 끝났어요. ${set.questions.length}문제 중 ${score.total}문제 정답이에요.`;
 
+  if (!attempt.sample) {
+    mountTeam(set, attempt, results, section);
+    showTeamRates(set);
+  }
+
   if (focus) {
     const heading = document.getElementById('score-heading');
     heading.focus({ preventScroll: true });
     heading.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
+  }
+}
+
+// 팀 기록에 보내기: the frozen first attempt goes to the team sheet once, after the member's PIN.
+// Only name, week, question id and correct/incorrect are sent.
+async function mountTeam(set, attempt, results, section) {
+  if (attempt.practice || !(await endpoint())) return;
+  const text = el('p', { class: 'team-text', attrs: { id: 'team-status', role: 'status' } });
+  const box = el('div', { class: 'team-send' }, text);
+  section.append(box);
+  const sentKey = 'sent:' + set.id;
+  const showSent = () => {
+    text.textContent = '팀 기록에 보냈어요. 내 오답 노트는 어느 기기에서나 이름과 PIN으로 열 수 있어요.';
+    box.replaceChildren(text, el('a', { class: 'text-link', text: '내 오답 노트 열기', attrs: { href: 'notes.html' } }));
+  };
+  if (store.get(sentKey)) {
+    showSent();
+    return;
+  }
+  if (!attempt.member) {
+    text.textContent = '이름 없이 제출해서 팀 기록에는 보내지 않았어요.';
+    return;
+  }
+  text.textContent = '팀 기록에 보내면 팀 정답률에 더해지고, 내 오답 노트를 어느 기기에서나 PIN으로 열 수 있어요.';
+  const send = el('button', { class: 'button', text: '팀 기록에 보내기', attrs: { id: 'team-send', type: 'button' } });
+  box.append(send);
+  send.addEventListener('click', async () => {
+    send.disabled = true;
+    try {
+      const pin = await ensurePin(attempt.member);
+      if (!pin) return;
+      const correct = Object.fromEntries(set.questions.map((q) => [q.id, Boolean(results[q.id] && results[q.id].correct)]));
+      await call('submit', { name: attempt.member, pin, week: set.id, results: correct });
+      store.set(sentKey, { member: attempt.member, sentAt: new Date().toISOString() });
+      showSent();
+      showTeamRates(set, { fresh: true });
+    } catch (err) {
+      if (err.code === 'bad-pin' || err.code === 'locked' || err.code === 'no-pin') forgetPin(attempt.member);
+      text.textContent = messageFor(err.code);
+    } finally {
+      send.disabled = false;
+    }
+  });
+}
+
+// 팀 정답률 under each verdict, once enough members have sent the week (the sheet holds it back before that).
+async function showTeamRates(set, opts) {
+  const stats = await teamStats(opts);
+  if (!stats[set.id]) return;
+  for (const q of set.questions) {
+    const block = document.querySelector(`li#${q.id} .q-result`);
+    const rate = rateOf(stats, set.id, q.id);
+    if (!block || !rate) continue;
+    block.querySelector('.team-rate')?.remove();
+    block.querySelector('.verdict').after(
+      el('p', { class: 'r-line team-rate', dataset: { low: rate.pct < LOW_RATE } }, el('span', { class: 'r-label', text: '팀 정답률: ' }), `${rate.pct}% · ${rate.total}명 중 ${rate.right}명`),
+    );
   }
 }
 

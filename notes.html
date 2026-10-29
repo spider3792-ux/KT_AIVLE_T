@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>내 오답 노트 · 스터디 복습 퀴즈</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <script src="js/boot.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="css/site.css">
+  <link rel="stylesheet" href="css/sheet.css">
+  <script type="module" src="js/notes.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="wordmark" href="index.html">스터디 복습 퀴즈</a>
+  </header>
+  <main class="sheet-page">
+    <article class="paper notes">
+      <header class="sheet-head">
+        <h1 id="notes-title" data-reveal="load">내 오답 노트</h1>
+        <p id="notes-lead" class="notes-lead" data-reveal="load">이름을 고르고 PIN을 넣으면 내가 틀린 문제가 주차별로 모여요. 다른 사람은 내 점수와 오답을 볼 수 없어요.</p>
+        <form id="notes-open" class="notes-open" data-reveal="load">
+          <p class="notes-field">
+            <label for="notes-member">성명</label>
+            <select id="notes-member" name="member">
+              <option value="">이름 고르기</option>
+            </select>
+          </p>
+          <button id="notes-go" class="button" type="submit">노트 열기</button>
+          <p id="notes-status" class="notes-status" role="status"></p>
+        </form>
+      </header>
+      <div id="notebook" class="notebook" aria-live="polite">
+        <ol class="note-guide" aria-label="오답 노트 쓰는 법">
+          <li><h2 data-reveal>이름과 PIN</h2><p data-reveal>처음 열 때 숫자 4자리 PIN을 정해요. 시험지를 팀 기록에 보낼 때도 같은 PIN을 써요.</p></li>
+          <li><h2 data-reveal>주차별 오답</h2><p data-reveal>팀 기록에 보낸 시험지마다 틀린 문제가 주차, 과목, 누구의 노션 기록에서 나왔는지와 함께 모여요.</p></li>
+          <li><h2 data-reveal>다시 풀기</h2><p data-reveal>누르면 그 문제가 연습으로 열려요. 연습은 채점만 하고, 처음 제출한 기록은 바뀌지 않아요.</p></li>
+        </ol>
+      </div>
+      <section id="team-low" class="team-low" aria-labelledby="team-low-title" hidden>
+        <h2 id="team-low-title">다 같이 어려웠던 문제</h2>
+        <p class="team-low-note">팀 정답률이 50%보다 낮은 문제예요. 세 명 이상 팀 기록에 보낸 주만 나와요.</p>
+        <ol id="team-low-list" class="note-list"></ol>
+      </section>
+      <noscript><p class="loading">이 페이지는 자바스크립트가 켜져 있어야 쓸 수 있어요.</p></noscript>
+    </article>
+  </main>
+</body>
+</html>

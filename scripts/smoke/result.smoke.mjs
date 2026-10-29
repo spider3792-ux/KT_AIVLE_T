@@ -31,7 +31,7 @@ export function mixedAnswers(set) {
 }
 
 // Puts `answers` into the sheet's controls the way a member would.
-async function fill(page, set, answers) {
+export async function fill(page, set, answers) {
   await page.eval(
     ({ questions, answers }) => {
       for (const q of questions) {

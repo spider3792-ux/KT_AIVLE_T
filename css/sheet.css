@@ -403,9 +403,9 @@ pre.code code {
   }
 }
 
-/* ---------- the confirmation: a paper slip laid on the dark ground, same perforated sides as the sheet ---------- */
+/* ---------- the confirmation and the PIN slip: paper slips laid on the dark ground, same perforated sides as the sheet ---------- */
 
-#confirm {
+.slip-dialog {
   width: min(34rem, calc(100vw - 32px));
   max-width: none;
   padding: clamp(24px, 5vw, 40px) clamp(20px, 4vw, 36px);
@@ -416,15 +416,16 @@ pre.code code {
   color: var(--ink);
 }
 
-#confirm::backdrop {
+.slip-dialog::backdrop {
   background: rgb(31 48 56 / 0.86);
 }
 
-#confirm h2 {
+.slip-dialog h2 {
   font-size: var(--step-head);
 }
 
-#confirm-desc {
+#confirm-desc,
+.slip-desc {
   margin-top: 16px;
   font-size: var(--step-body);
   line-height: 1.55;
@@ -463,11 +464,11 @@ pre.code code {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  #confirm[open] {
+  .slip-dialog[open] {
     animation: slip-in var(--t-ui) var(--ease-out);
   }
 
-  #confirm[open]::backdrop {
+  .slip-dialog[open]::backdrop {
     animation: slip-fade var(--t-ui) ease-out;
   }
 }
@@ -705,5 +706,224 @@ pre.code code {
 
   .opt:active span {
     transform: none;
+  }
+}
+
+/* ---------- team records: the send line in the score block, the PIN slip, the team rate under a verdict ---------- */
+
+.team-send {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 28px;
+  margin-top: clamp(20px, 3vw, 28px);
+  padding-top: clamp(20px, 3vw, 28px);
+  border-top: 10px dotted var(--bg);
+}
+
+.team-text {
+  flex: 1 1 18rem;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+}
+
+.team-send .text-link {
+  color: var(--bg);
+}
+
+.pin-field {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.pin-field label {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.pin-input {
+  width: 8ch;
+  min-height: var(--target);
+  padding: 8px 16px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--step-lead);
+  letter-spacing: 0.3em;
+  font-variant-numeric: tabular-nums;
+}
+
+.pin-error {
+  min-height: 1.5em;
+  margin-top: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.q-result .team-rate[data-low="true"] {
+  font-weight: 600;
+}
+
+.q-result .team-rate[data-low="true"] .r-label {
+  padding: 0 6px;
+  background: var(--ink);
+  color: var(--bg);
+}
+
+/* ---------- 내 오답 노트: the same paper, one section per week, each wrong question a note ---------- */
+
+.notes-lead {
+  max-width: 40ch;
+  font-size: var(--step-body);
+  line-height: 1.55;
+}
+
+.notes-open {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 16px 24px;
+}
+
+.notes-field {
+  display: grid;
+  flex: 0 1 16rem;
+  gap: 6px;
+}
+
+.notes-field label {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.notes-field select {
+  min-height: var(--target);
+  padding: 8px 16px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 1.125rem;
+  cursor: pointer;
+}
+
+.notes-status {
+  flex: 1 1 100%;
+  min-height: 1.5em;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.note-owner {
+  margin-bottom: clamp(24px, 4vw, 40px);
+  padding: 14px 20px;
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+.note-week + .note-week,
+.team-low {
+  margin-top: clamp(48px, 7vw, 72px);
+}
+
+.note-week h2,
+.team-low h2 {
+  font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.4rem);
+}
+
+.note-score,
+.team-low-note {
+  margin-top: 10px;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+}
+
+.note-score .nums {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.note-list {
+  display: grid;
+  gap: 12px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.note {
+  display: grid;
+  gap: 8px;
+  padding: 18px 20px 20px;
+  background: var(--surface);
+}
+
+.note-meta,
+.note-rate {
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.note-rate {
+  font-weight: 600;
+}
+
+.note-prompt {
+  font-size: var(--step-body);
+  line-height: 1.55;
+}
+
+.note-num {
+  font-weight: 600;
+}
+
+.note-again {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.note-empty {
+  margin-top: 16px;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+}
+
+/* Before a notebook is opened: what the page does, in three filled rows. */
+.note-guide {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.note-guide li {
+  display: grid;
+  grid-template-columns: minmax(0, 12rem) minmax(0, 1fr);
+  gap: 8px 24px;
+  align-items: baseline;
+  padding: 20px 24px;
+  background: var(--surface);
+}
+
+.note-guide h2 {
+  font-size: var(--step-lead);
+  font-weight: 600;
+}
+
+.note-guide p {
+  font-size: 1.0625rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 599px) {
+  .note-guide li {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

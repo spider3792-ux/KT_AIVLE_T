@@ -86,7 +86,7 @@ test('js/grade.js: no regex lookbehind', () => {
   assert.equal(lookbehindIn(stripComments(read('js/grade.js'))), false);
 });
 
-for (const page of ['index.html', 'quiz.html']) {
+for (const page of ['index.html', 'quiz.html', 'notes.html']) {
   test(`${page}: lang, CSP, external scripts only, no inline style, safe blank-target links`, () => {
     assert.deepEqual(pageProblems(read(page)), []);
   });

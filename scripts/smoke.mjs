@@ -306,7 +306,7 @@ async function skeleton(kit) {
 
 // ---------------------------------------------------------------- runner
 async function main() {
-  const server = spawn(process.execPath, [join(root, 'scripts', 'serve.mjs'), String(PORT)], { stdio: ['ignore', 'ignore', 'ignore'] });
+  const server = spawn(process.execPath, [join(root, 'scripts', 'serve.mjs'), String(PORT), '--fake-sheet'], { stdio: ['ignore', 'ignore', 'ignore'] });
   let browser = null;
   let passed = 0;
   let failed = 0;

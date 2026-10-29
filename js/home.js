@@ -4,6 +4,7 @@
 import { el, getJson, loadMembers, loadWeek, renderError, store } from './site.js';
 import { sourceLabel } from './grade.js';
 import { reveal, stagger } from './motion.js';
+import { LOW_RATE, rateOf, teamStats } from './team.js';
 
 const app = document.querySelector('#app');
 const stack = document.querySelector('#stack');
@@ -250,6 +251,25 @@ function renderShelf(set, entry) {
   shelf.replaceChildren(...spines);
 }
 
+// Team accuracy on this week's spines; a question under LOW_RATE gets a dark mark.
+// Nothing shows until three members have sent the week (the sheet holds the totals back before that).
+async function markShelf(entry) {
+  const stats = await teamStats();
+  if (!stats[entry.id]) return;
+  let low = 0;
+  for (const a of document.querySelectorAll('#shelf a.spine')) {
+    const qid = a.getAttribute('href').split('#')[1];
+    const rate = rateOf(stats, entry.id, qid);
+    if (!rate) continue;
+    const isLow = rate.pct < LOW_RATE;
+    a.append(el('span', { class: 'spine-rate', dataset: { low: isLow }, text: rate.pct + '%' }));
+    a.setAttribute('aria-label', a.getAttribute('aria-label') + ', 팀 정답률 ' + rate.pct + '%');
+    if (isLow) low += 1;
+  }
+  document.querySelector('.contents-note').textContent =
+    '책등을 누르면 그 문제가 시험지에서 바로 열려요. 아래 숫자는 팀 정답률이고, 진한 칸 ' + low + '개는 50%보다 낮은 문제예요.';
+}
+
 // The bookshelf: every week in quizzes/index.json is one book lying flat, newest on top.
 // A new week needs nothing here: publishing adds it to the index and it lands on the pile.
 async function renderPile(weeks, current) {
@@ -351,6 +371,7 @@ async function start() {
   renderSources(set, members);
   renderSlip(set, entry);
   renderShelf(set, entry);
+  markShelf(entry);
   renderCard(set, entry);
   renderPile(weeks, week);
   numberEntrances();

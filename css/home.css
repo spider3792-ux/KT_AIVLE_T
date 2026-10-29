@@ -33,10 +33,31 @@
   grid-column: 2;
 }
 
-.home-top .text-link {
+.top-links {
+  display: flex;
   grid-column: 3;
   justify-self: end;
+  gap: 8px 24px;
+}
+
+.home-top .text-link {
   color: var(--bg);
+}
+
+@media (max-width: 699px) {
+  .home-top {
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 16px;
+  }
+
+  .home-top .wordmark {
+    grid-column: 1;
+  }
+
+  .top-links {
+    grid-column: 2;
+    gap: 16px;
+  }
 }
 
 .home main {
@@ -824,6 +845,21 @@
   background: var(--tone, var(--tone-1));
   color: var(--ink);
   white-space: nowrap;
+}
+
+.spine-rate {
+  margin-inline-start: auto;
+  padding: 10px 0;
+  writing-mode: horizontal-tb;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.spine-rate[data-low="true"] {
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 600;
 }
 
 .spine[data-tone="1"] { --tone: var(--tone-1); }
