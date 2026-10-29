@@ -34,6 +34,9 @@ const SUBJECT_PLATE = {
   '데이터 시각화': ['playfair', 'nightingale'],
   머신러닝: 'puncher',
   Python: 'form',
+  딥러닝: 'clocks',
+  AICE: ['puncher', 'card'],
+  생성형AI: ['nightingale', 'form', 'clocks'],
 };
 const FALLBACK_PLATES = ['clocks', 'tabulator', 'card'];
 

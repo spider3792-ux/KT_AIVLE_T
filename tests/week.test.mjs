@@ -156,9 +156,17 @@ test('buildReport: previous set, notes and re-make behaviour', () => {
   assert.deepEqual(Object.keys(own), ['today', 'isFriday', 'window', 'weekId', 'previous', 'notes']);
 });
 
-test('CLI against the real repo', () => {
-  assert.equal(JSON.parse(run('--today', '2026-10-16', '--json').stdout).previous, null);
-  const r = run('--today', '2026-10-23', '--json');
+// The live quizzes/index.json changes every week, so the CLI checks below run against a pinned
+// copy that lists only the sample week 2026-W42 (the sample set file itself stays in quizzes/).
+const sampleQuizzes = () =>
+  quizzesDir('sample-w42', [{ id: '2026-W42', title: '10월 셋째 주 시험지', published: '2026-10-16', file: 'quizzes/2026-W42.json' }], {
+    '2026-W42.json': JSON.parse(readFileSync('quizzes/2026-W42.json', 'utf8')),
+  });
+
+test('CLI against the sample week', () => {
+  const Q = sampleQuizzes();
+  assert.equal(JSON.parse(run('--today', '2026-10-16', '--quizzes', Q, '--json').stdout).previous, null);
+  const r = run('--today', '2026-10-23', '--quizzes', Q, '--json');
   assert.equal(r.status, 0, r.stderr);
   const out = JSON.parse(r.stdout);
   assert.equal(out.previous.id, '2026-W42');
@@ -206,12 +214,13 @@ test('CLI usage errors exit 2 with Korean on stderr', () => {
 });
 
 test('plain output is readable Korean', () => {
-  const r = run('--today', '2026-10-16');
+  const Q = sampleQuizzes();
+  const r = run('--today', '2026-10-16', '--quizzes', Q);
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /출제 범위: 2026-10-09 ~ 2026-10-16/);
   assert.match(r.stdout, /직전 세트: 없음/);
-  assert.match(run('--today', '2026-10-17').stdout, /금요일이 아니어서/);
-  assert.match(run('--today', '2026-10-23').stdout, /직전 세트: 2026-W42/);
+  assert.match(run('--today', '2026-10-17', '--quizzes', Q).stdout, /금요일이 아니어서/);
+  assert.match(run('--today', '2026-10-23', '--quizzes', Q).stdout, /직전 세트: 2026-W42/);
 });
 
 test('.gitignore ignores work/ and keeps the taste-skill lines', () => {

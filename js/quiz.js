@@ -525,8 +525,8 @@ function resolveResults(set, attempt, answers) {
 function sampleAnswers(set) {
   const out = {};
   for (const q of set.questions) {
-    if (q.id === 'q3' && q.type === 'short') out[q.id] = ` ${q.answer[0].toUpperCase().replace('(', '( ')} `;
-    else if (['q1', 'q2', 'q4', 'q8'].includes(q.id)) out[q.id] = q.answer;
+    if (q.id === 'q3') out[q.id] = q.type === 'short' ? ` ${q.answer[0].toUpperCase().replace('(', '( ')} ` : q.answer;
+    else if (['q1', 'q2', 'q4', 'q8'].includes(q.id)) out[q.id] = q.type === 'short' ? q.answer[0] : q.answer;
     else if (['q5', 'q7', 'q9', 'q10'].includes(q.id)) out[q.id] = q.type === 'choice' ? (q.answer + 1) % 4 : '오답';
   }
   return out;

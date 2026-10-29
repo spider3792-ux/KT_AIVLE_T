@@ -23,8 +23,8 @@ export function mixedAnswers(set) {
   for (const q of set.questions) {
     const right = ['q1', 'q2', 'q4', 'q8'].includes(q.id);
     const wrong = ['q5', 'q7', 'q9', 'q10'].includes(q.id);
-    if (q.id === 'q3') out[q.id] = ` ${q.answer[0].toUpperCase().replace('(', '( ')} `;
-    else if (right) out[q.id] = q.answer;
+    if (q.id === 'q3') out[q.id] = q.type === 'short' ? ` ${q.answer[0].toUpperCase().replace('(', '( ')} ` : q.answer;
+    else if (right) out[q.id] = q.type === 'short' ? q.answer[0] : q.answer;
     else if (wrong) out[q.id] = q.type === 'choice' ? (q.answer + 1) % 4 : '오답';
   }
   return out;
@@ -315,7 +315,8 @@ export default async function result(kit) {
   });
   const blank = view.lis.find((l) => l.id === 'q6');
   assert.ok(blank.text.includes('오답 · 빈 답') && blank.text.includes('내 답: 빈 답'), 'a blank answer reads 오답 · 빈 답');
-  const alt = view.lis.find((l) => l.id === 'q3');
+  const altQ = set.questions.find((q) => q.type === 'short' && q.answer.length > 1);
+  const alt = view.lis.find((l) => l.id === altQ.id);
   assert.ok(alt.text.includes('다른 인정 답: '), 'a short answer with several accepted answers lists the others');
   assert.equal(JSON.parse(await graded.eval((k) => localStorage.getItem(k), attemptKey)).score.total, 5);
 

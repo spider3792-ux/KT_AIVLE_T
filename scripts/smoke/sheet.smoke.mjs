@@ -136,53 +136,57 @@ export default async function sheet(kit) {
 
   // ---------------------------------------------------------------- (a) draft resume
   const key = `srq:draft:${set.id}`;
-  const q1 = set.questions.find((q) => q.id === 'q1');
-  const q3 = set.questions.find((q) => q.id === 'q3');
-  assert.equal(q1.type, 'choice');
-  assert.equal(q3.type, 'short');
+  // Any week works: take the first two choice questions and the first two short-answer questions.
+  const choiceQs = set.questions.filter((q) => q.type === 'choice');
+  const shortQs = set.questions.filter((q) => q.type === 'short');
+  const q1 = choiceQs[0];
+  const q2c = choiceQs[1];
+  const q3 = shortQs[0];
+  const q6s = shortQs[1] || shortQs[0];
+  const ids = { c: q1.id, c2: q2c.id, s: q3.id, s2: q6s.id };
   const who = members[1].name;
   const keep = await kit.open('quiz.html', { width: 1440, height: 900 });
   await kit.waitFor(keep, () => document.querySelectorAll('li.q').length > 0);
   await kit.chooseMember(keep, who);
   await keep.eval(
-    ({ answer }) => {
-      document.querySelector(`input[type="radio"][name="q1"][value="${answer}"]`).click();
-      const input = document.getElementById('q3-a');
+    ({ answer, ids }) => {
+      document.querySelector(`input[type="radio"][name="${ids.c}"][value="${answer}"]`).click();
+      const input = document.getElementById(`${ids.s}-a`);
       input.value = 'isna().sum()';
       input.dispatchEvent(new Event('input', { bubbles: true }));
       return true;
     },
-    { answer: q1.answer },
+    { answer: q1.answer, ids },
   );
   await kit.sleep(600);
   const draft = await keep.eval((k) => JSON.parse(localStorage.getItem(k)), key);
   assert.ok(draft && draft.v === 1, 'draft stored with v: 1');
-  assert.equal(draft.answers.q1, q1.answer);
-  assert.equal(draft.answers.q3, 'isna().sum()');
+  assert.equal(draft.answers[ids.c], q1.answer);
+  assert.equal(draft.answers[ids.s], 'isna().sum()');
   assert.equal(draft.member, who);
   assert.ok(!Number.isNaN(Date.parse(draft.updatedAt)), 'updatedAt is an ISO date');
 
   await kit.reload(keep);
   await kit.waitFor(keep, () => document.querySelectorAll('li.q').length > 0);
   const back = await keep.eval(
-    ({ answer }) => ({
-      checked: document.querySelector(`input[type="radio"][name="q1"][value="${answer}"]`).checked,
-      count: document.querySelectorAll('input[type="radio"][name="q1"]:checked').length,
-      typed: document.getElementById('q3-a').value,
+    ({ answer, ids }) => ({
+      checked: document.querySelector(`input[type="radio"][name="${ids.c}"][value="${answer}"]`).checked,
+      count: document.querySelectorAll(`input[type="radio"][name="${ids.c}"]:checked`).length,
+      typed: document.getElementById(`${ids.s}-a`).value,
       member: document.querySelector('select#sheet-member').value,
     }),
-    { answer: q1.answer },
+    { answer: q1.answer, ids },
   );
   assert.equal(back.checked, true, 'q1 radio is checked again');
   assert.equal(back.count, 1);
   assert.equal(back.typed, 'isna().sum()');
   assert.equal(back.member, who);
-  await keep.eval(() => {
-    const input = document.getElementById('q6-a');
+  await keep.eval((ids) => {
+    const input = document.getElementById(`${ids.s2}-a`);
     input.value = '데이터 누수';
     input.dispatchEvent(new Event('input', { bubbles: true }));
     return true;
-  });
+  }, ids);
   await kit.waitFor(keep, () => /^자동 저장됨 · [0-9]{2}:[0-9]{2}$/.test(document.querySelector('#save-state').textContent));
 
   // A submitted sheet drops its draft and keeps only the frozen attempt.
@@ -194,21 +198,21 @@ export default async function sheet(kit) {
   // ---------------------------------------------------------------- (b) tampered draft
   const bad = await kit.open('quiz.html', { width: 1440, height: 900 });
   await bad.eval(
-    (k) => {
-      localStorage.setItem(k, JSON.stringify({ v: 1, member: 'not a member', answers: { q1: 9, q2: 'x', q99: 1, q3: 'a'.repeat(300) }, updatedAt: 'x' }));
+    ({ k, ids }) => {
+      localStorage.setItem(k, JSON.stringify({ v: 1, member: 'not a member', answers: { [ids.c]: 9, [ids.c2]: 'x', q99: 1, [ids.s]: 'a'.repeat(300) }, updatedAt: 'x' }));
       return true;
     },
-    key,
+    { k: key, ids },
   );
   await kit.reload(bad);
   await kit.waitFor(bad, () => document.querySelectorAll('li.q').length > 0);
-  const tampered = await bad.eval(() => ({
-    q1: document.querySelectorAll('input[type="radio"][name="q1"]:checked').length,
-    q2: document.querySelectorAll('input[type="radio"][name="q2"]:checked').length,
-    q3: document.getElementById('q3-a').value,
+  const tampered = await bad.eval((ids) => ({
+    q1: document.querySelectorAll(`input[type="radio"][name="${ids.c}"]:checked`).length,
+    q2: document.querySelectorAll(`input[type="radio"][name="${ids.c2}"]:checked`).length,
+    q3: document.getElementById(`${ids.s}-a`).value,
     member: document.querySelector('select#sheet-member').value,
     items: document.querySelectorAll('li.q').length,
-  }));
+  }), ids);
   assert.equal(tampered.q1, 0, 'out-of-range q1 is dropped');
   assert.equal(tampered.q2, 0, 'a string for a choice question is dropped');
   assert.equal(tampered.q3, '', 'a 300-character answer is dropped');
@@ -232,11 +236,11 @@ export default async function sheet(kit) {
   assert.ok(note.visible, '#storage-notice is visible');
   await kit.answerAll(blocked, set, 'correct');
   await kit.sleep(500);
-  const still = await blocked.eval(() => ({
+  const still = await blocked.eval((ids) => ({
     items: document.querySelectorAll('li.q').length,
     checked: document.querySelectorAll('input[type="radio"]:checked').length,
-    typed: document.getElementById('q3-a').value,
-  }));
+    typed: document.getElementById(`${ids.s}-a`).value,
+  }), ids);
   assert.equal(still.items, 10);
   assert.ok(still.checked >= 5, 'answering still works with storage blocked');
   assert.ok(still.typed.length > 0);

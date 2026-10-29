@@ -1,7 +1,7 @@
 // One test per rule of the set checker: mutate a clone of the sample, expect the documented Korean stem at the right path.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { validateSet, validateIndex, memberNames, parseRecords, checkAgainstRecords } from '../scripts/lib/validate-core.mjs';
 
 const read = (rel) => JSON.parse(readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8'));
@@ -323,7 +323,7 @@ const indexCtx = (over = {}) => ({
 test('index: the real quizzes/index.json is clean with the real file list', () => {
   const idx = read('quizzes/index.json');
   const r = validateIndex(idx, {
-    listQuizFiles: () => ['2026-W42.json', 'index.json'],
+    listQuizFiles: () => readdirSync('quizzes'),
     readSet: (f) => read(f),
   });
   assert.deepEqual(r.errors, []);
