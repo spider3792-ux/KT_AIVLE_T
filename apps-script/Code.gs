@@ -1,4 +1,6 @@
+/** @OnlyCurrentDoc */
 // 스터디 복습 퀴즈 · 팀 기록 (Google Apps Script, 구글 시트에 붙여 넣는 코드)
+// @OnlyCurrentDoc: the permission asked for is "this one spreadsheet", not every sheet in the account.
 //
 // The quiz site POSTs JSON as text/plain (no CORS preflight) to this web app and reads JSON back.
 // The sheet keeps only what the team agreed on:
