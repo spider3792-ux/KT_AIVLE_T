@@ -8,6 +8,13 @@
   "estimatedMinutes": 14,
   "sources": [
     {
+      "id": "s1",
+      "author": "김준수",
+      "date": "2026-10-21",
+      "title": "김준수-AICE 1일차",
+      "subject": "AICE"
+    },
+    {
       "id": "s5",
       "author": "노아영",
       "date": "2026-10-21",
@@ -33,6 +40,13 @@
       "author": "차승환",
       "date": "2026-10-22",
       "title": "차승환 - aice 2일차",
+      "subject": "AICE"
+    },
+    {
+      "id": "s11",
+      "author": "노아영",
+      "date": "2026-10-22",
+      "title": "노아영-Aice 일차",
       "subject": "AICE"
     },
     {
@@ -64,6 +78,13 @@
       "subject": "생성형AI"
     },
     {
+      "id": "s27",
+      "author": "송지희",
+      "date": "2026-10-28",
+      "title": "송지희-생성형 AI 3일차",
+      "subject": "생성형AI"
+    },
+    {
       "id": "s28",
       "author": "노아영",
       "date": "2026-10-28",
@@ -78,6 +99,13 @@
       "subject": "생성형AI"
     },
     {
+      "id": "s31",
+      "author": "이주현",
+      "date": "2026-10-29",
+      "title": "이주현- 생성형 ai 4일차",
+      "subject": "생성형AI"
+    },
+    {
       "id": "s33",
       "author": "송지희",
       "date": "2026-10-29",
@@ -89,17 +117,19 @@
     {
       "id": "q1",
       "kind": "concept",
-      "type": "short",
-      "prompt": "AICE 과제에서 컬럼 값 중 '_'가 차지하는 비율이 50%를 넘는지 보려고 해요. df['컬럼'].value_counts()에 어떤 매개변수를 넣으면 개수 대신 비율로 볼 수 있나요? (매개변수=값 형태로 적어 보세요)",
-      "answer": [
-        "normalize=True",
-        "value_counts(normalize=True)",
-        "df['컬럼'].value_counts(normalize=True)"
+      "type": "choice",
+      "prompt": "'지역' 열에 서울·부산·대구 세 값이 있어요. 이 데이터에 pd.get_dummies()를 적용하면 어떻게 되나요?",
+      "choices": [
+        "지역별 열 3개가 생기고 그 행의 지역 칸만 1(True)이 된다",
+        "지역 열 하나에 서울=0, 부산=1, 대구=2처럼 번호가 들어간다",
+        "지역 열이 사라지고 가장 많이 나온 지역 하나만 열로 남는다",
+        "지역 열에 지역 이름의 글자 수가 숫자로 바뀌어 들어간다"
       ],
-      "explanation": "value_counts()는 기본으로 값별 개수를 세요.\nnormalize=True를 주면 전체 대비 비율(0~1)로 바꿔 보여 줘요.\n그래서 '_' 같은 결측 표시가 몇 %인지 바로 알 수 있어요.\n(df['컬럼'] == '_').mean()으로도 같은 비율을 구할 수 있어요.",
+      "answer": 0,
+      "explanation": "get_dummies()는 범주 하나하나를 새 열로 만드는 원-핫 인코딩이에요.\n그 행의 지역에 해당하는 열만 1(True), 나머지는 0(False)이에요.\n서울=0, 부산=1처럼 번호를 매기는 건 LabelEncoder 방식이에요.\n이주현(10/22): \"문자로 된 범주형 데이터를 머신러닝이 학습할 수 있도록 숫자(0과 1)로 바꿔줌.\"",
       "concept": {
-        "name": "value_counts 비율",
-        "ref": "pandas 공식 문서 · Series.value_counts"
+        "name": "원-핫 인코딩",
+        "ref": "pandas 공식 문서 · pandas.get_dummies"
       },
       "sourceIds": [
         "s8"
@@ -192,12 +222,12 @@
       "id": "q6",
       "kind": "concept",
       "type": "choice",
-      "prompt": "LLM에 환율 조회 도구(get_exchange_rate)를 연결했어요. 실제로 환율 함수를 실행하는 것은 누구인가요?",
+      "prompt": "LLM에 날씨 조회 도구를 연결했어요. 사용자가 \"내일 부산 날씨 알려 줘\"라고 하면, 실제로 날씨 조회 함수를 실행하는 것은 누구인가요?",
       "choices": [
-        "LLM이 도구 설명을 읽고 스스로 함수를 실행한다",
-        "애플리케이션 코드가 모델이 요청한 도구를 실행하고 결과를 다시 모델에 전달한다",
-        "API 서버가 tools 목록의 함수를 자동으로 모두 실행한다",
-        "사용자가 함수를 실행해 결과를 프롬프트에 붙여 넣어야 한다"
+        "LLM이 도구 설명을 읽고 스스로 날씨 함수를 실행해 답을 만든다",
+        "애플리케이션 코드가 모델이 요청한 도구를 실행하고 결과를 다시 전달한다",
+        "API 서버가 tools 목록에 있는 함수를 요청 때마다 자동으로 모두 실행한다",
+        "사용자가 직접 함수를 실행해서 그 결과를 프롬프트에 붙여 넣어야 한다"
       ],
       "answer": 1,
       "explanation": "모델은 어떤 도구를 어떤 인자로 부를지 JSON으로 요청만 해요.\n함수 실행은 애플리케이션 코드의 몫이에요.\n코드가 결과를 다시 모델에 넘기면 모델이 최종 답을 만들어요.\n그래서 description과 매개변수 설명을 분명히 써야 도구를 잘 골라요.",
@@ -213,88 +243,91 @@
       "id": "q7",
       "kind": "concept",
       "type": "choice",
-      "prompt": "JSON Schema로 글에서 학생 정보를 뽑아요. 스키마는 \"required\": [\"이름\", \"도시\", \"나이\"]이고, 나이는 {\"type\": [\"number\", \"null\"]}이에요. 나이가 적혀 있지 않은 글이라면 결과의 나이는 어떻게 되어야 하나요?",
+      "prompt": "JSON Schema로 글에서 도서 정보를 뽑아요. 스키마는 \"required\": [\"제목\", \"저자\", \"출판연도\"]이고, 출판연도는 {\"type\": [\"integer\", \"null\"]}이에요. 출판연도가 적혀 있지 않은 글이라면 결과의 출판연도는 어떻게 되어야 하나요?",
       "choices": [
-        "나이 필드에 0을 넣어 숫자 형식을 지킨다",
-        "나이 필드에 빈 문자열(\"\")을 넣는다",
-        "나이 필드를 빼고 이름과 도시만 받는다",
-        "나이 필드는 남기고 값을 null로 둔다"
+        "출판연도 필드에 0을 넣어 숫자 형식을 지킨다",
+        "출판연도 필드에 빈 문자열(\"\")을 넣는다",
+        "출판연도 필드를 빼고 제목과 저자만 받는다",
+        "출판연도 필드는 남기고 값을 null로 둔다"
       ],
       "answer": 3,
-      "explanation": "값을 모르면 0이나 추측으로 채우지 않고 null로 받아요.\n김준수(10/29): \"값이 알려지지 않은 경우 0으로 임의 대체하지 말고, 해당 필드에서 허용하는 경우 null로 표현한다.\"\n송지희(10/29): \"나이\": {\"type\": [\"number\", \"null\"]} #값이 없을 경우, null\nrequired라 필드를 뺄 수 없고, 빈 문자열(\"\")은 number도 null도 아니에요.",
+      "explanation": "값을 모르면 0이나 빈 값으로 채우지 않고 null로 받아요.\n김준수(10/29): \"값이 알려지지 않은 경우 0으로 임의 대체하지 말고, 해당 필드에서 허용하는 경우 null로 표현한다.\"\n이주현(10/29): \"key 값이 있으면 숫자로, 없으면 null로 저장하라는 뜻\"\nrequired라 필드를 뺄 수 없고, 빈 문자열은 integer도 null도 아니에요.",
       "concept": {
         "name": "JSON Schema의 null 허용",
         "ref": "OpenAI API 공식 문서 · Structured Outputs"
       },
       "sourceIds": [
         "s30",
-        "s33"
+        "s31"
       ]
     },
     {
       "id": "q8",
       "kind": "code",
       "type": "choice",
-      "prompt": "이 코드에서 tot_time에만 mode() 뒤에 [0]을 붙인 이유로 가장 알맞은 것은 무엇인가요?",
-      "code": "edu_df = edu_df.fillna({\n'rate_math': edu_df['rate_math'].mean(),\n'rate_science': edu_df['rate_science'].median(),\n'tot_time': edu_df['tot_time'].mode()[0]\n})",
+      "prompt": "설문 결과의 빈 칸을 최빈값으로 채우려고 해요. 마지막 줄을 실행하면 비어 있던 혈액형 칸에는 무엇이 들어가나요?",
+      "code": "import pandas as pd\n\nsurvey = pd.DataFrame({\"혈액형\": [\"A\", \"O\", None, \"A\", \"O\", \"B\"]})\nprint(survey[\"혈액형\"].mode())  # A와 O가 함께 나와요\nsurvey[\"혈액형\"] = survey[\"혈액형\"].fillna(survey[\"혈액형\"].mode()[0])",
       "choices": [
-        "mode()는 최빈값을 Series로 돌려주므로 그중 첫 번째 값을 꺼내야 한 값으로 채울 수 있어서",
-        "tot_time이 문자형 열이라 숫자로 바꾸려고",
-        "[0]을 붙이면 결측치가 0으로 채워져서",
-        "mean()과 median()도 원래 [0]이 필요한데 생략해서"
+        "'A': 최빈값 A, O 중 정렬 순서상 첫 번째 값",
+        "'O': 데이터에서 가장 나중에 나온 최빈값",
+        "'A'와 'O'가 함께 담긴 목록",
+        "아무것도 들어가지 않고 오류가 난다"
       ],
       "answer": 0,
-      "explanation": "mode()는 최빈값이 여러 개일 수 있어 Series로 돌려줘요.\n[0]으로 첫 번째 값을 꺼내야 한 값으로 결측치를 채울 수 있어요.\nmean()과 median()은 원래 숫자 하나를 돌려주므로 [0]이 필요 없어요.\n[0]을 빼면 나중에 모델 학습 때 오류가 나기 쉬워요.",
+      "explanation": "A와 O가 2번씩 나와서 mode()는 두 값을 시리즈로 돌려줘요.\n[0]은 그중 첫 번째 값(정렬 순서상 'A')을 꺼내요.\n[0] 없이 시리즈를 넣으면 행 번호끼리 짝지어 채워서 빈 칸이 그대로 남을 수 있어요.\n김준수(10/21): \"mode()는 최빈값을 리스트 또는 시리즈로 불러오기 때문에 … [0]을 넣어서 지정해줘야한다.\"",
       "concept": {
         "name": "최빈값으로 결측치 채우기",
-        "ref": "pandas 공식 문서 · DataFrame.mode"
+        "ref": "pandas 공식 문서 · pandas.Series.mode"
       },
       "sourceIds": [
-        "s5"
+        "s5",
+        "s1"
       ]
     },
     {
       "id": "q9",
       "kind": "code",
       "type": "choice",
-      "prompt": "이 전처리 코드에서 검증 데이터에 fit_transform이 아니라 transform만 쓴 이유는 무엇인가요?",
-      "code": "scaler = StandardScaler()\n\nX_train = scaler.fit_transform(X_train)\nX_test = scaler.transform(X_valid)",
+      "prompt": "검증 데이터로 성능을 확인하려고 이렇게 전처리했어요. 이 코드에서 고쳐야 할 점으로 알맞은 것은 무엇인가요?",
+      "code": "X_tr, X_va, y_tr, y_va = train_test_split(X, y, test_size=0.2, random_state=0)\n\nscaler = MinMaxScaler()\nX_tr = scaler.fit_transform(X_tr)\nX_va = scaler.fit_transform(X_va)",
       "choices": [
-        "transform이 fit_transform보다 계산이 빨라서",
-        "검증 데이터는 원래 스케일링하지 않아도 되어서",
-        "학습 데이터로만 구한 평균·표준편차를 그대로 써야 데이터 누수가 생기지 않아서",
-        "검증 데이터를 학습 데이터와 합쳐 다시 학습하려고"
+        "MinMaxScaler 대신 StandardScaler를 써야만 한다",
+        "스케일링을 train_test_split보다 먼저 해야 한다",
+        "X_tr도 fit 없이 transform만 해야 한다",
+        "X_va는 fit_transform이 아니라 transform만 해야 한다"
       ],
-      "answer": 2,
-      "explanation": "fit은 X_train의 평균과 표준편차를 계산해 scaler에 저장해요.\n검증 데이터에도 같은 기준을 적용해야 하므로 transform만 해요.\n검증 데이터로 다시 fit하면 평가용 정보가 기준에 섞여 누수가 생겨요.\n그리고 스케일링한 결과(X_test)를 뒤에서 검증 데이터로 써야 해요.",
+      "answer": 3,
+      "explanation": "스케일러는 학습 데이터로만 fit해서 기준(최솟값·최댓값)을 정해요.\n검증 데이터는 그 기준으로 transform만 해야 같은 잣대로 비교돼요.\n분할 전에 전체로 스케일링하면 검증 정보가 학습에 섞여요.\n노아영(10/22): \"fit은 train에만, transfrom은 train test모두!!\"",
       "concept": {
-        "name": "fit과 transform",
-        "ref": "scikit-learn 공식 문서 · StandardScaler"
+        "name": "스케일러 fit과 transform",
+        "ref": "scikit-learn 공식 문서 · MinMaxScaler"
       },
       "sourceIds": [
-        "s7"
+        "s7",
+        "s11"
       ]
     },
     {
       "id": "q10",
       "kind": "code",
       "type": "choice",
-      "prompt": "이 코드가 history[-5:]로 최근 메시지만 보내는 이유로 가장 알맞은 것은 무엇인가요?",
-      "code": "history = []\nhistory.append({\"role\": \"user\", \"content\": prompt})\n\n# 최근 5개의 메시지만 모델에게 전달\nlimited_history = history[-5:]\n\nresponse = client.responses.create(\n    model=\"gpt-4o-mini\",\n    input=limited_history\n)",
+      "prompt": "이 함수로 ask()를 여러 번 부르면, 매번 모델(call_llm)에 전달되는 대화는 무엇인가요?",
+      "code": "messages = []\n\ndef ask(question):\n    messages.append({\"role\": \"user\", \"content\": question})\n    recent = messages[-6:]\n    reply = call_llm(recent)\n    messages.append({\"role\": \"assistant\", \"content\": reply})\n    return reply",
       "choices": [
-        "API가 이전 대화를 알아서 기억하므로 중복을 없애려고",
-        "대화가 쌓일수록 늘어나는 토큰 비용과 컨텍스트 한도를 관리하면서 최근 맥락은 유지하려고",
-        "오래된 메시지일수록 답변 정확도를 높여서",
-        "temperature를 낮춘 것과 같은 효과로 답을 고정하려고"
+        "첫 질문부터 지금까지 쌓인 모든 메시지",
+        "이번 질문 하나 (API가 이전 대화를 기억하므로)",
+        "질문과 답변을 합친 최근 메시지 최대 6개",
+        "최근 질문 최대 6개 (답변은 빠짐)"
       ],
-      "answer": 1,
-      "explanation": "API는 이전 질문을 기억하지 못해 매번 대화 기록을 함께 보내야 해요.\n그대로 쌓으면 토큰 비용이 늘고 컨텍스트 한도에 닿아요.\n최근 N개만 남기는 Sliding Window로 비용과 맥락의 균형을 맞춰요.\n더 오래된 내용이 필요하면 요약해서 넘기는 방법도 있어요.",
+      "answer": 2,
+      "explanation": "messages에는 질문과 답변이 번갈아 쌓이고, [-6:]은 마지막 6개만 잘라요.\n최근 대화만 보내는 이 방식을 슬라이딩 윈도우라고 해요.\nAPI는 이전 대화를 스스로 기억하지 않아서, 보낼 대화를 코드가 골라 줘야 해요.\n송지희(10/28): \"sliding window, n개 메시지만 유지\"",
       "concept": {
-        "name": "대화 히스토리 관리(Sliding Window)",
+        "name": "슬라이딩 윈도우 대화 관리",
         "ref": "OpenAI API 공식 문서 · Conversation state"
       },
       "sourceIds": [
-        "s26"
+        "s26",
+        "s27"
       ]
     }
   ]
