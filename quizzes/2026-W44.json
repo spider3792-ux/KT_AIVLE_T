@@ -57,6 +57,20 @@
       "subject": "생성형AI"
     },
     {
+      "id": "s21",
+      "author": "차승환",
+      "date": "2026-10-27",
+      "title": "차승환 - 생성형 AI 2일차",
+      "subject": "생성형AI"
+    },
+    {
+      "id": "s22",
+      "author": "송지희",
+      "date": "2026-10-27",
+      "title": "송지희-생성형AI 2일차",
+      "subject": "생성형AI"
+    },
+    {
       "id": "s23",
       "author": "노아영",
       "date": "2026-10-27",
@@ -68,20 +82,6 @@
       "author": "정보경",
       "date": "2026-10-27",
       "title": "정보경-생성형AI2일차",
-      "subject": "생성형AI"
-    },
-    {
-      "id": "s26",
-      "author": "차승환",
-      "date": "2026-10-28",
-      "title": "차승환 - 생성형 AI 3일차",
-      "subject": "생성형AI"
-    },
-    {
-      "id": "s27",
-      "author": "송지희",
-      "date": "2026-10-28",
-      "title": "송지희-생성형 AI 3일차",
       "subject": "생성형AI"
     },
     {
@@ -311,23 +311,23 @@
       "id": "q10",
       "kind": "code",
       "type": "choice",
-      "prompt": "이 함수로 ask()를 여러 번 부르면, 매번 모델(call_llm)에 전달되는 대화는 무엇인가요?",
-      "code": "messages = []\n\ndef ask(question):\n    messages.append({\"role\": \"user\", \"content\": question})\n    recent = messages[-6:]\n    reply = call_llm(recent)\n    messages.append({\"role\": \"assistant\", \"content\": reply})\n    return reply",
+      "prompt": "키와 연봉으로 고객을 분류하는데, 두 열의 숫자 범위가 크게 달라요. 스케일링을 하지 않은 이 코드에 스케일링을 추가하면 결과가 크게 달라질 수 있는 모델과 그 이유는 무엇인가요?",
+      "code": "from sklearn.neighbors import KNeighborsClassifier\nfrom sklearn.tree import DecisionTreeClassifier\n\n# 키(cm)는 150~190, 연봉(만 원)은 2000~9000 범위예요\nmodels = {\"knn\": KNeighborsClassifier(), \"tree\": DecisionTreeClassifier()}\nfor name, m in models.items():\n    m.fit(X_train, y_train)\n    print(name, m.score(X_valid, y_valid))",
       "choices": [
-        "첫 질문부터 지금까지 쌓인 모든 메시지",
-        "이번 질문 하나 (API가 이전 대화를 기억하므로)",
-        "질문과 답변을 합친 최근 메시지 최대 6개",
-        "최근 질문 최대 6개 (답변은 빠짐)"
+        "tree: 분할 기준값이 숫자 크기에 따라 달라져 연봉 쪽으로 치우치기 때문",
+        "둘 다: 단위가 다른 열이 섞이면 어떤 모델이든 학습 결과가 크게 바뀌기 때문",
+        "knn: 이웃을 거리로 찾는데 그 거리를 연봉 차이가 거의 다 정하기 때문",
+        "둘 다 아님: fit()이 학습 전에 열마다 단위를 자동으로 맞춰 주기 때문"
       ],
       "answer": 2,
-      "explanation": "messages에는 질문과 답변이 번갈아 쌓이고, [-6:]은 마지막 6개만 잘라요.\n최근 대화만 보내는 이 방식을 슬라이딩 윈도우라고 해요.\nAPI는 이전 대화를 스스로 기억하지 않아서, 보낼 대화를 코드가 골라 줘야 해요.\n송지희(10/28): \"sliding window, n개 메시지만 유지\"",
+      "explanation": "KNN은 가까운 이웃을 거리로 찾아서, 범위가 큰 연봉이 거리를 거의 다 정해요.\n두 열을 같은 범위로 맞추면 이웃이 바뀌어 결과가 달라질 수 있어요.\n트리는 한 열씩 기준값으로 나눠서 단위 차이의 영향을 거의 받지 않아요.\n차승환(10/27): \"KNN은 스케일링 필요, DecisionTree·RandomForest는 불필요\"\n송지희(10/27): \"조건부 스케일링: knn(스켕일링), decision,randomforest(불필요)\"",
       "concept": {
-        "name": "슬라이딩 윈도우 대화 관리",
-        "ref": "OpenAI API 공식 문서 · Conversation state"
+        "name": "거리 기반 모델과 스케일링",
+        "ref": "scikit-learn 공식 문서 · KNeighborsClassifier"
       },
       "sourceIds": [
-        "s26",
-        "s27"
+        "s21",
+        "s22"
       ]
     }
   ]
