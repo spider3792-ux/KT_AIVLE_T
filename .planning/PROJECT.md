@@ -65,7 +65,7 @@
 
 **학습 도메인:** 데이터 분석 스터디 (Python, Pandas, 데이터 시각화, 데이터 분석, 머신러닝). "분석 단계" = 수집·전처리·EDA·모델링·평가 등.
 
-**개발 환경:** Windows 11, Node v25.7.0, git 사용자 차승환 / spider3792@gmail.com (프로젝트 로컬 설정). 설치 스킬: design-taste-frontend, agent-browser(화면 확인), find-skills 등.
+**개발 환경:** Windows 11, Node v25.7.0, git 사용자 차승환 (프로젝트 로컬 설정). 설치 스킬: design-taste-frontend, agent-browser(화면 확인), find-skills 등.
 
 ## Constraints
 
