@@ -57,20 +57,6 @@
       "subject": "생성형AI"
     },
     {
-      "id": "s21",
-      "author": "차승환",
-      "date": "2026-10-27",
-      "title": "차승환 - 생성형 AI 2일차",
-      "subject": "생성형AI"
-    },
-    {
-      "id": "s22",
-      "author": "송지희",
-      "date": "2026-10-27",
-      "title": "송지희-생성형AI 2일차",
-      "subject": "생성형AI"
-    },
-    {
       "id": "s23",
       "author": "노아영",
       "date": "2026-10-27",
@@ -82,6 +68,20 @@
       "author": "정보경",
       "date": "2026-10-27",
       "title": "정보경-생성형AI2일차",
+      "subject": "생성형AI"
+    },
+    {
+      "id": "s26",
+      "author": "차승환",
+      "date": "2026-10-28",
+      "title": "차승환 - 생성형 AI 3일차",
+      "subject": "생성형AI"
+    },
+    {
+      "id": "s27",
+      "author": "송지희",
+      "date": "2026-10-28",
+      "title": "송지희-생성형 AI 3일차",
       "subject": "생성형AI"
     },
     {
@@ -311,23 +311,24 @@
       "id": "q10",
       "kind": "code",
       "type": "choice",
-      "prompt": "키와 연봉으로 고객을 분류하는데, 두 열의 숫자 범위가 크게 달라요. 스케일링을 하지 않은 이 코드에 스케일링을 추가하면 결과가 크게 달라질 수 있는 모델과 그 이유는 무엇인가요?",
-      "code": "from sklearn.neighbors import KNeighborsClassifier\nfrom sklearn.tree import DecisionTreeClassifier\n\n# 키(cm)는 150~190, 연봉(만 원)은 2000~9000 범위예요\nmodels = {\"knn\": KNeighborsClassifier(), \"tree\": DecisionTreeClassifier()}\nfor name, m in models.items():\n    m.fit(X_train, y_train)\n    print(name, m.score(X_valid, y_valid))",
+      "prompt": "분석 보고서 HTML에 그래프 이미지를 별도 파일 없이 넣으려고 해요. 이 코드에서 base64.b64encode(raw)가 하는 일로 알맞은 것은 무엇인가요?",
+      "code": "import base64\n\nwith open(\"chart.png\", \"rb\") as img:\n    raw = img.read()\n\ntext = base64.b64encode(raw).decode(\"ascii\")\nhtml = f'<img src=\"data:image/png;base64,{text}\">'",
       "choices": [
-        "tree: 분할 기준값이 숫자 크기에 따라 달라져 연봉 쪽으로 치우치기 때문",
-        "둘 다: 단위가 다른 열이 섞이면 어떤 모델이든 학습 결과가 크게 바뀌기 때문",
-        "knn: 이웃을 거리로 찾는데 그 거리를 연봉 차이가 거의 다 정하기 때문",
-        "둘 다 아님: fit()이 학습 전에 열마다 단위를 자동으로 맞춰 주기 때문"
+        "이미지를 다른 사람이 볼 수 없도록 암호로 바꾼다",
+        "이미지 용량을 줄이려고 픽셀 정보를 압축한다",
+        "이미지의 바이너리 데이터를 텍스트 문자로 바꾼다",
+        "PNG 이미지를 HTML 형식의 파일로 변환한다"
       ],
       "answer": 2,
-      "explanation": "KNN은 가까운 이웃을 거리로 찾아서, 범위가 큰 연봉이 거리를 거의 다 정해요.\n두 열을 같은 범위로 맞추면 이웃이 바뀌어 결과가 달라질 수 있어요.\n트리는 한 열씩 기준값으로 나눠서 단위 차이의 영향을 거의 받지 않아요.\n차승환(10/27): \"KNN은 스케일링 필요, DecisionTree·RandomForest는 불필요\"\n송지희(10/27): \"조건부 스케일링: knn(스켕일링), decision,randomforest(불필요)\"",
+      "explanation": "Base64는 이미지 같은 바이너리를 글자로 바꾸는 인코딩이에요.\n글자가 되었으니 HTML 안에 data URL로 바로 넣을 수 있어요.\n누구나 다시 디코딩할 수 있어 암호화가 아니고, 크기는 오히려 조금 커져요.\n송지희(10/28): \"바이너리 데이터(이미지, 파일 등)를 텍스트 문자 바꾸는 인코딩 방식\"\n정보경(10/27): \"이미지를 base64문자열로 html에 넣어버리면 볼때 이미지 바로 볼수있음\"",
       "concept": {
-        "name": "거리 기반 모델과 스케일링",
-        "ref": "scikit-learn 공식 문서 · KNeighborsClassifier"
+        "name": "Base64 인코딩",
+        "ref": "Python 공식 문서 · base64"
       },
       "sourceIds": [
-        "s21",
-        "s22"
+        "s26",
+        "s27",
+        "s24"
       ]
     }
   ]
