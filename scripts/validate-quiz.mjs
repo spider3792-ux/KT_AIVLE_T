@@ -11,7 +11,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
 const USAGE = `사용법: node scripts/validate-quiz.mjs <파일> [--sources <입력 기록.json>] [--members <members.json>] [--strict]
   <파일>       검사할 세트(quizzes/2026-W42.json) 또는 주차 목록(quizzes/index.json)
-  --sources    노션 입력 기록 목록과 대조합니다 (출처 존재, 코드 원문 일치)
+  --sources    노션 입력 기록 목록과 대조합니다 (출처 존재, 기록 코드를 그대로 옮기지 않았는지)
   --members    스터디원 이름 파일 (기본: 저장소 루트의 members.json)
   --strict     경고도 실패로 처리합니다
 종료 코드: 0 통과 · 1 검사 실패 · 2 사용법 또는 파일 문제`;

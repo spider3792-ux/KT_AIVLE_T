@@ -51,15 +51,15 @@ test('broken-sources names the source and the question it is about', () => {
   assert.match(r.stderr, /오류 questions\[1\] \(q2\): 해설은 5줄/);
 });
 
-test('a records copy with one code block re-indented by a single space exits 1 with 원문', () => {
+test('a set whose code is copied from the records exits 1 with 그대로 옮겼습니다', () => {
   const rec = JSON.parse(readFileSync('tests/fixtures/records-2026-W42.json', 'utf8'));
-  const s1 = rec.records.find((r) => r.id === 's1');
-  s1.codeBlocks = s1.codeBlocks.map((b) => b.replace('    df.groupby', '     df.groupby'));
-  const p = join(tmp, 'records-shifted.json');
-  writeFileSync(p, JSON.stringify(rec));
-  const r = run('quizzes/2026-W42.json', '--sources', p);
+  const set = JSON.parse(readFileSync('quizzes/2026-W42.json', 'utf8'));
+  set.questions.find((q) => q.id === 'q8').code = rec.records.find((r) => r.id === 's1').codeBlocks[0];
+  const p = join(tmp, '2026-W42.json');
+  writeFileSync(p, JSON.stringify(set));
+  const r = run(p, '--sources', 'tests/fixtures/records-2026-W42.json');
   assert.equal(r.status, 1, r.stdout);
-  assert.match(r.stderr, /원문/);
+  assert.match(r.stderr, /그대로 옮겼습니다/);
   assert.match(r.stderr, /\(q8\)/);
 });
 

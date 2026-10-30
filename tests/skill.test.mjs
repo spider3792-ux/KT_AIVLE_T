@@ -88,18 +88,14 @@ function codeSet(code) {
   };
 }
 
-test('worked example: verbatim code passes the record check, one inserted space is rejected', () => {
+test('worked example: code copied from the record is rejected, code written anew passes', () => {
   const records = parseRecords(EX_RECORDS);
   const [first, second] = records.get('s1').codeBlocks;
-  const exact = second.replace(/\n$/, '');
-  assert.deepEqual(checkAgainstRecords(codeSet(exact), records).errors, []);
-  assert.deepEqual(checkAgainstRecords(codeSet(first.replace(/\n$/, '')), records).errors, []);
-  assert.deepEqual(checkAgainstRecords(codeSet(".groupby(['동', '요일'])"), records).errors, []);
+  const { errors } = checkAgainstRecords(codeSet(first + second.replace(/\(\['동', '요일'\]\)/, "(['동',  '요일'])")), records);
+  assert.ok(errors.some((e) => JSON.stringify(e).includes('그대로 옮겼습니다')), `no copy error: ${JSON.stringify(errors)}`);
 
-  const changed = exact.replace("['동', '요일']", "['동',  '요일']");
-  assert.notEqual(changed, exact);
-  const { errors } = checkAgainstRecords(codeSet(changed), records);
-  assert.ok(errors.some((e) => JSON.stringify(e).includes('원문')), `no 원문 error: ${JSON.stringify(errors)}`);
+  const fresh = "by_gu = df.groupby('구')['신고건수'].sum()\nprint(by_gu.sort_values(ascending=False).head(3))";
+  assert.deepEqual(checkAgainstRecords(codeSet(fresh), records).errors, []);
 });
 
 test('gate command form: a draft named set.json passes with --sources', () => {

@@ -423,17 +423,25 @@ test('checkAgainstRecords: practice file not in any record', () => {
   expectError(checkAgainstRecords(sample, parseRecords(rec)), '실습 파일 sales.csv가 입력 기록에 없습니다', '(q8)');
 });
 
-test('checkAgainstRecords: code that differs by one space is rejected', () => {
+test('checkAgainstRecords: code copied from a record is rejected', () => {
   const rec = records();
-  const s1 = rec.records.find((x) => x.id === 's1');
-  s1.codeBlocks = s1.codeBlocks.map((b) => b.replace('    df.groupby', '     df.groupby'));
-  expectError(checkAgainstRecords(sample, parseRecords(rec)), '코드가 입력 기록 원문과 일치하지 않습니다 (q8)', '(q8)');
+  const set = clone();
+  q(set, 'q8').code = rec.records.find((x) => x.id === 's1').codeBlocks[0];
+  expectError(checkAgainstRecords(set, parseRecords(rec)), '코드가 입력 기록의 코드를 그대로 옮겼습니다', '(q8)');
 });
 
-test('checkAgainstRecords: CRLF in the record and one trailing newline are tolerated', () => {
+test('checkAgainstRecords: a re-indented copy with CRLF records is still a copy', () => {
   const rec = records();
   for (const r of rec.records) r.codeBlocks = r.codeBlocks.map((b) => b.replace(/\n/g, '\r\n'));
   const set = clone();
-  q(set, 'q8').code += '\n';
-  assert.deepEqual(checkAgainstRecords(set, parseRecords(rec)).errors, []);
+  q(set, 'q10').code = rec.records.find((x) => x.id === 's6').codeBlocks[0].replace(/\r\n/g, '\n').replace(/^/gm, '  ');
+  expectError(checkAgainstRecords(set, parseRecords(rec)), '그대로 옮겼습니다', '(q10)');
+});
+
+test('checkAgainstRecords: one shared line only warns', () => {
+  const set = clone();
+  q(set, 'q8').code = 'print(monthly.head())\nshare = monthly / monthly.sum()';
+  const r = checkAgainstRecords(set, parseRecords(records()));
+  assert.deepEqual(r.errors, []);
+  expectWarning(r, '코드 한 줄이 입력 기록과 같습니다', '(q8)');
 });

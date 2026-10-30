@@ -363,12 +363,18 @@ export function parseRecords(json) {
   return map;
 }
 
-// CRLF becomes LF and one trailing newline is dropped; every other whitespace stays exactly as written.
-const codeForm = (s) => s.replace(/\r\n/g, '\n').replace(/\n$/, '');
+// The lines of a code block that say something: comments, blank lines, imports and short lines
+// (brackets, `.sum()`) do not count, and spacing is collapsed so re-indenting a copy does not hide it.
+const codeLines = (s) =>
+  s
+    .replace(/\r\n/g, '\n')
+    .split('\n')
+    .map((l) => l.replace(/#.*$/, '').trim().replace(/\s+/g, ' '))
+    .filter((l) => l.length >= 12 && !/^(import|from)\s/.test(l));
 
 export function checkAgainstRecords(set, records) {
   const out = collector();
-  const { error } = out;
+  const { error, warn } = out;
   if (!isObj(set) || !(records instanceof Map)) return { errors: out.errors, warnings: out.warnings };
 
   const sources = Array.isArray(set.sources) ? set.sources : [];
@@ -384,6 +390,9 @@ export function checkAgainstRecords(set, records) {
   });
 
   const allFiles = new Set([...records.values()].flatMap((r) => r.files));
+  // KT AIVLE rule: course practice code, assignments and answers are never published as they are, so a code
+  // question shows code written anew from the concept, not lines lifted from the notes or practice files.
+  const recordLines = new Set([...records.values()].flatMap((r) => r.codeBlocks.flatMap(codeLines)));
   const questions = Array.isArray(set.questions) ? set.questions : [];
   questions.forEach((q, i) => {
     if (!isObj(q)) return;
@@ -392,11 +401,12 @@ export function checkAgainstRecords(set, records) {
       error(label, `실습 파일 ${q.file}가 입력 기록에 없습니다`);
     }
     if (q.kind === 'code' && isText(q.code)) {
-      const cited = (Array.isArray(q.sourceIds) ? q.sourceIds : []).map((id) => records.get(id)).filter(Boolean);
-      const pool = cited.length > 0 ? cited : [...records.values()];
-      const want = codeForm(q.code);
-      const found = pool.some((r) => r.codeBlocks.some((b) => codeForm(b).includes(want)));
-      if (!found) error(label, `코드가 입력 기록 원문과 일치하지 않습니다 (${show(q.id)})`);
+      const copied = codeLines(q.code).filter((l) => recordLines.has(l));
+      if (copied.length >= 2) {
+        error(label, `코드가 입력 기록의 코드를 그대로 옮겼습니다 (같은 줄 ${copied.length}개). 개념을 바탕으로 새로 작성해 주세요`);
+      } else if (copied.length === 1) {
+        warn(label, `코드 한 줄이 입력 기록과 같습니다: ${copied[0]}`);
+      }
     }
   });
 

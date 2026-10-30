@@ -1,15 +1,54 @@
 {
   "id": "2026-W42",
   "title": "10월 셋째 주 시험지",
-  "range": { "from": "2026-10-09", "to": "2026-10-16" },
+  "range": {
+    "from": "2026-10-09",
+    "to": "2026-10-16"
+  },
   "estimatedMinutes": 15,
   "sources": [
-    { "id": "s1", "author": "김준수", "date": "2026-10-13", "title": "groupby로 월별 매출 집계하기", "subject": "Pandas" },
-    { "id": "s2", "author": "이주현", "date": "2026-10-14", "title": "merge와 결측치 확인 정리", "subject": "Pandas" },
-    { "id": "s3", "author": "차승환", "date": "2026-10-14", "title": "matplotlib 객체 지향 방식 정리", "subject": "데이터 시각화" },
-    { "id": "s4", "author": "송지희", "date": "2026-10-15", "title": "seaborn으로 분포 비교하기", "subject": "데이터 시각화" },
-    { "id": "s5", "author": "노아영", "date": "2026-10-15", "title": "나이 결측치 채우기와 분석 흐름 정리", "subject": "데이터 분석" },
-    { "id": "s6", "author": "정보경", "date": "2026-10-16", "title": "타이타닉 분류 모델과 평가 지표", "subject": "머신러닝" }
+    {
+      "id": "s1",
+      "author": "김준수",
+      "date": "2026-10-13",
+      "title": "groupby로 월별 매출 집계하기",
+      "subject": "Pandas"
+    },
+    {
+      "id": "s2",
+      "author": "이주현",
+      "date": "2026-10-14",
+      "title": "merge와 결측치 확인 정리",
+      "subject": "Pandas"
+    },
+    {
+      "id": "s3",
+      "author": "차승환",
+      "date": "2026-10-14",
+      "title": "matplotlib 객체 지향 방식 정리",
+      "subject": "데이터 시각화"
+    },
+    {
+      "id": "s4",
+      "author": "송지희",
+      "date": "2026-10-15",
+      "title": "seaborn으로 분포 비교하기",
+      "subject": "데이터 시각화"
+    },
+    {
+      "id": "s5",
+      "author": "노아영",
+      "date": "2026-10-15",
+      "title": "나이 결측치 채우기와 분석 흐름 정리",
+      "subject": "데이터 분석"
+    },
+    {
+      "id": "s6",
+      "author": "정보경",
+      "date": "2026-10-16",
+      "title": "타이타닉 분류 모델과 평가 지표",
+      "subject": "머신러닝"
+    }
   ],
   "questions": [
     {
@@ -25,8 +64,13 @@
       ],
       "answer": 1,
       "explanation": "groupby()만으로는 아직 아무것도 계산하지 않아요.\n묶는 기준을 기억해 둔 DataFrameGroupBy 객체가 나와요.\nmean(), sum() 같은 집계 함수를 붙여야 값이 계산돼요.\n예: df.groupby('지역')['매출'].sum()",
-      "concept": { "name": "groupby", "ref": "pandas 공식 문서 · GroupBy" },
-      "sourceIds": ["s1"]
+      "concept": {
+        "name": "groupby",
+        "ref": "pandas 공식 문서 · GroupBy"
+      },
+      "sourceIds": [
+        "s1"
+      ]
     },
     {
       "id": "q2",
@@ -41,18 +85,33 @@
       ],
       "answer": 2,
       "explanation": "how='left'는 왼쪽 표의 행을 모두 남겨요.\n오른쪽에 짝이 없으면 그 열은 NaN이 돼요.\n양쪽에 모두 있는 행만 남기는 건 inner예요.\n오른쪽 표의 키가 중복이면 행이 늘어날 수 있어요.",
-      "concept": { "name": "merge 방식", "ref": "pandas 공식 문서 · DataFrame.merge" },
-      "sourceIds": ["s2"]
+      "concept": {
+        "name": "merge 방식",
+        "ref": "pandas 공식 문서 · DataFrame.merge"
+      },
+      "sourceIds": [
+        "s2"
+      ]
     },
     {
       "id": "q3",
       "kind": "concept",
       "type": "short",
       "prompt": "DataFrame df에서 열마다 결측치가 몇 개인지 한 번에 세는 메서드 체인을 적어 보세요.",
-      "answer": ["isna().sum()", "isnull().sum()", "df.isna().sum()", "df.isnull().sum()"],
+      "answer": [
+        "isna().sum()",
+        "isnull().sum()",
+        "df.isna().sum()",
+        "df.isnull().sum()"
+      ],
       "explanation": "isna()는 값이 비어 있으면 True인 표를 돌려줘요.\nTrue는 1로 계산되므로 sum()을 붙이면 열별 개수가 나와요.\nisnull()은 isna()의 별칭이라 결과가 같아요.\ncount()는 비어 있지 않은 값을 세므로 반대예요.",
-      "concept": { "name": "결측치 확인", "ref": "pandas 공식 문서 · DataFrame.isna" },
-      "sourceIds": ["s2"]
+      "concept": {
+        "name": "결측치 확인",
+        "ref": "pandas 공식 문서 · DataFrame.isna"
+      },
+      "sourceIds": [
+        "s2"
+      ]
     },
     {
       "id": "q4",
@@ -67,8 +126,13 @@
       ],
       "answer": 0,
       "explanation": "subplots()는 Figure(도화지)와 Axes(그림 칸)를 돌려줘요.\nax.plot(), ax.set_title()처럼 칸마다 따로 조정할 수 있어요.\nplt.plot()은 지금 선택된 칸에 그리는 방식이에요.\n칸이 여러 개면 어디에 그려질지 헷갈리기 쉬워요.",
-      "concept": { "name": "객체 지향 방식", "ref": "matplotlib 공식 문서 · pyplot.subplots" },
-      "sourceIds": ["s3"]
+      "concept": {
+        "name": "객체 지향 방식",
+        "ref": "matplotlib 공식 문서 · pyplot.subplots"
+      },
+      "sourceIds": [
+        "s3"
+      ]
     },
     {
       "id": "q5",
@@ -83,18 +147,33 @@
       ],
       "answer": 3,
       "explanation": "boxplot은 중앙값, 사분위수, 이상치를 한 번에 보여줘요.\n카테고리마다 상자가 하나씩 생겨 비교하기 쉬워요.\nlineplot은 시간처럼 이어지는 값의 변화를 볼 때 써요.\n카테고리에 선을 이으면 없는 흐름이 있는 것처럼 보여요.",
-      "concept": { "name": "분포 비교 차트", "ref": "seaborn 공식 문서 · boxplot" },
-      "sourceIds": ["s4"]
+      "concept": {
+        "name": "분포 비교 차트",
+        "ref": "seaborn 공식 문서 · boxplot"
+      },
+      "sourceIds": [
+        "s4"
+      ]
     },
     {
       "id": "q6",
       "kind": "concept",
       "type": "short",
       "prompt": "전체 데이터로 스케일링한 뒤에 train/test로 나누면 평가 데이터의 정보가 학습에 영향을 줘서 점수가 실제보다 좋게 나옵니다. 이 문제를 무엇이라고 부르나요?",
-      "answer": ["데이터 누수", "정보 누수", "data leakage", "leakage"],
+      "answer": [
+        "데이터 누수",
+        "정보 누수",
+        "data leakage",
+        "leakage"
+      ],
       "explanation": "평가 데이터의 정보가 학습 과정에 새는 것을 데이터 누수라고 해요.\n전체 데이터로 평균을 구하면 그 평균에 테스트 값이 섞여요.\n그러면 점수가 실제 성능보다 높게 나와요.\n먼저 train/test로 나누고, 학습 데이터로만 fit 하세요.",
-      "concept": { "name": "평가 데이터 분리", "ref": "scikit-learn 공식 문서 · Common pitfalls" },
-      "sourceIds": ["s6"]
+      "concept": {
+        "name": "평가 데이터 분리",
+        "ref": "scikit-learn 공식 문서 · Common pitfalls"
+      },
+      "sourceIds": [
+        "s6"
+      ]
     },
     {
       "id": "q7",
@@ -109,15 +188,20 @@
       ],
       "answer": 2,
       "explanation": "환자가 5%뿐이면 전부 '정상'으로 찍어도 정확도는 95%예요.\n이때 정확도는 모델이 환자를 찾았는지 알려주지 못해요.\n환자를 얼마나 찾았는지는 재현율(recall)로 봐요.\n정밀도와 재현율을 함께 보는 F1도 같이 확인해요.",
-      "concept": { "name": "불균형 데이터 평가", "ref": "scikit-learn 공식 문서 · classification_report" },
-      "sourceIds": ["s6"]
+      "concept": {
+        "name": "불균형 데이터 평가",
+        "ref": "scikit-learn 공식 문서 · classification_report"
+      },
+      "sourceIds": [
+        "s6"
+      ]
     },
     {
       "id": "q8",
       "kind": "code",
       "type": "choice",
       "prompt": "이 코드는 분석의 어느 단계에서 무엇을 하려는 코드인가요?",
-      "code": "monthly = (\n    df.groupby(df[\"날짜\"].dt.to_period(\"M\"))[\"매출\"]\n    .sum()\n    .reset_index()\n)\nprint(monthly.head())",
+      "code": "df[\"월\"] = df[\"날짜\"].dt.month\nmonth_sales = df.groupby(\"월\")[\"매출\"].sum()\nprint(month_sales)",
       "choices": [
         "전처리 단계: 결측치를 채우고 이상치를 지운다",
         "탐색 단계: 월별 매출 흐름을 보려고 집계한다",
@@ -125,9 +209,14 @@
         "시각화 단계: 월별 매출을 막대그래프로 그린다"
       ],
       "answer": 1,
-      "explanation": "날짜를 월 단위로 묶어 매출 합계를 구하는 집계예요.\n데이터를 처음 훑어보는 탐색(EDA) 단계의 작업이에요.\n값을 고치지도, 모델을 학습하지도 않아요.\n그래프는 이 결과를 plt나 seaborn에 넘겨야 그려져요.",
-      "concept": { "name": "기간별 집계", "ref": "pandas 공식 문서 · Series.dt.to_period" },
-      "sourceIds": ["s1"],
+      "explanation": "날짜에서 월을 뽑아 월별 매출 합계를 구하는 집계예요.\n데이터를 처음 훑어보는 탐색(EDA) 단계의 작업이에요.\n값을 고치지도, 모델을 학습하지도 않아요.\n그래프는 이 결과를 plt나 seaborn에 넘겨야 그려져요.",
+      "concept": {
+        "name": "기간별 집계",
+        "ref": "pandas 공식 문서 · Series.dt.month"
+      },
+      "sourceIds": [
+        "s1"
+      ],
       "file": "sales.csv"
     },
     {
@@ -135,28 +224,42 @@
       "kind": "code",
       "type": "short",
       "prompt": "이 코드는 나이 열의 빈 값을 어떤 대표값으로 채우나요? 한 단어로 적어 보세요.",
-      "code": "df[\"나이\"] = df[\"나이\"].fillna(\n    df[\"나이\"].median()\n)\nprint(df[\"나이\"].isna().sum())",
-      "answer": ["중앙값", "중위수", "median"],
-      "explanation": "fillna()는 비어 있는 칸을 인자로 준 값으로 채워요.\n인자가 median()이라 나이의 중앙값으로 채우는 코드예요.\n평균(mean)은 아주 큰 나이 한두 개에 끌려가기 쉬워요.\n마지막 줄은 채운 뒤 빈 값이 0개인지 확인해요.",
-      "concept": { "name": "결측치 채우기", "ref": "pandas 공식 문서 · DataFrame.fillna" },
-      "sourceIds": ["s5"]
+      "code": "mid = df[\"나이\"].median()\ndf[\"나이\"] = df[\"나이\"].fillna(mid)\nprint(df[\"나이\"].isnull().sum())",
+      "answer": [
+        "중앙값",
+        "중위수",
+        "median"
+      ],
+      "explanation": "fillna()는 비어 있는 칸을 인자로 준 값으로 채워요.\n인자 mid가 median()이라 나이의 중앙값으로 채우는 코드예요.\n평균(mean)은 아주 큰 나이 한두 개에 끌려가기 쉬워요.\n마지막 줄은 채운 뒤 빈 값이 0개인지 확인해요.",
+      "concept": {
+        "name": "결측치 채우기",
+        "ref": "pandas 공식 문서 · DataFrame.fillna"
+      },
+      "sourceIds": [
+        "s5"
+      ]
     },
     {
       "id": "q10",
       "kind": "code",
       "type": "choice",
       "prompt": "이 코드에서 평가 결과가 실제보다 좋게 나올 수 있는 부분은 어디인가요?",
-      "code": "scaler = StandardScaler()\nX_scaled = scaler.fit_transform(X)\nX_train, X_test, y_train, y_test = train_test_split(\n    X_scaled, y, test_size=0.2, random_state=42\n)\nmodel.fit(X_train, y_train)",
+      "code": "X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.25)\nscaler = StandardScaler().fit(X)\nmodel.fit(scaler.transform(X_tr), y_tr)\nprint(model.score(scaler.transform(X_te), y_te))",
       "choices": [
-        "test_size=0.2로 평가 데이터를 20%나 남긴 부분",
-        "random_state=42로 분할을 고정한 부분",
-        "model.fit()에 X_train만 넣은 부분",
-        "분할하기 전에 전체 X로 스케일러를 fit한 부분"
+        "test_size=0.25로 평가 데이터를 25%나 남긴 부분",
+        "train_test_split에 random_state를 주지 않은 부분",
+        "model.fit()에 학습 데이터만 넣은 부분",
+        "분할한 뒤에도 전체 X로 스케일러를 fit한 부분"
       ],
       "answer": 3,
-      "explanation": "fit_transform(X)는 전체 데이터의 평균과 표준편차를 써요.\n그 안에 나중에 평가할 테스트 데이터의 정보가 섞여요.\n이런 문제를 데이터 누수라고 해요.\n먼저 split하고 X_train으로만 fit한 뒤 X_test는 transform만 해요.",
-      "concept": { "name": "fit과 transform 순서", "ref": "scikit-learn 공식 문서 · StandardScaler" },
-      "sourceIds": ["s6"]
+      "explanation": "StandardScaler().fit(X)는 전체 데이터의 평균과 표준편차를 써요.\n그 안에 나중에 평가할 테스트 데이터의 정보가 섞여요.\n이런 문제를 데이터 누수라고 해요.\nX_tr로만 fit하고 X_te는 그 기준으로 transform만 해요.",
+      "concept": {
+        "name": "fit과 transform 순서",
+        "ref": "scikit-learn 공식 문서 · StandardScaler"
+      },
+      "sourceIds": [
+        "s6"
+      ]
     }
   ]
 }
