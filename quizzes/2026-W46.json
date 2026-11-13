@@ -1,0 +1,308 @@
+{
+  "id": "2026-W46",
+  "title": "랭체인 4~5일차 복습",
+  "range": {
+    "from": "2026-11-11",
+    "to": "2026-11-12"
+  },
+  "estimatedMinutes": 14,
+  "sources": [
+    {
+      "id": "s2",
+      "author": "이주현",
+      "date": "2026-11-11",
+      "title": "이주현-langchain4일차",
+      "subject": "Langchain"
+    },
+    {
+      "id": "s3",
+      "author": "차승환",
+      "date": "2026-11-11",
+      "title": "차승환 - Langchain 4일차",
+      "subject": "Langchain"
+    },
+    {
+      "id": "s4",
+      "author": "송지희",
+      "date": "2026-11-11",
+      "title": "송지희-Langchain 4일차",
+      "subject": "Langchain"
+    },
+    {
+      "id": "s5",
+      "author": "노아영",
+      "date": "2026-11-11",
+      "title": "노아영-Langchain 4일차",
+      "subject": "Langchain"
+    },
+    {
+      "id": "s6",
+      "author": "정보경",
+      "date": "2026-11-11",
+      "title": "정보경-LangChain 4일차",
+      "subject": "Langchain"
+    },
+    {
+      "id": "s7",
+      "author": "김준수",
+      "date": "2026-11-12",
+      "title": "김준수-Langchain 5일차",
+      "subject": "Langchain"
+    },
+    {
+      "id": "s8",
+      "author": "이주현",
+      "date": "2026-11-12",
+      "title": "이주현-langchain5일차",
+      "subject": "Langchain"
+    },
+    {
+      "id": "s9",
+      "author": "차승환",
+      "date": "2026-11-12",
+      "title": "차승환 - Langchain 5일차",
+      "subject": "Langchain"
+    },
+    {
+      "id": "s10",
+      "author": "송지희",
+      "date": "2026-11-12",
+      "title": "송지희-Langchain 5일차",
+      "subject": "Langchain"
+    },
+    {
+      "id": "s11",
+      "author": "노아영",
+      "date": "2026-11-12",
+      "title": "노아영-LangChain 5일차",
+      "subject": "Langchain"
+    },
+    {
+      "id": "s12",
+      "author": "정보경",
+      "date": "2026-11-12",
+      "title": "정보경-Langchain 5일차",
+      "subject": "Langchain"
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "kind": "concept",
+      "type": "choice",
+      "prompt": "EnsembleRetriever로 BM25와 벡터 검색을 섞으려 해요. 검색할 문서가 모델명·오류 코드·숫자로 가득한 기술 매뉴얼이라면 weights를 어떻게 조정하는 것이 알맞나요?",
+      "choices": [
+        "벡터 검색 쪽 비중을 높여 뜻이 비슷한 글을 더 찾는다",
+        "두 검색기 비중을 0.5, 0.5로 고정하는 것이 원칙이다",
+        "BM25 쪽 비중을 높여 정확한 용어와 숫자를 더 반영한다",
+        "BM25를 빼고 벡터 검색 하나만 쓰는 것이 낫다"
+      ],
+      "answer": 2,
+      "explanation": "BM25는 단어가 그대로 나오는지 세는 키워드 검색이라 코드·숫자·고유명사에 강해요.\n벡터 검색은 뜻이 비슷한 일상 문장형 질문에 강해요.\n문서 성격에 따라 두 검색기의 비중을 바꿔 쓰는 것이 핵심이에요.\n정보경(11/11): \"백서에 전문 용어나 코드, 숫자가 많다면 BM25(키워드) 의 비중을 높입니다.\"",
+      "concept": {
+        "name": "하이브리드 검색 가중치",
+        "ref": "LangChain 공식 문서 · EnsembleRetriever"
+      },
+      "sourceIds": [
+        "s6"
+      ]
+    },
+    {
+      "id": "q2",
+      "kind": "concept",
+      "type": "choice",
+      "prompt": "RRF로 두 검색 결과를 합쳐요. 어떤 문서가 키워드 검색에서 1위, 벡터 검색에서 3위였고 상수 c=60이라면 이 문서의 RRF 점수는 어떻게 계산하나요?",
+      "choices": [
+        "1/(60+1) + 1/(60+3)",
+        "(1 + 3) / 2 = 2",
+        "두 검색기의 원래 유사도 점수를 더한다",
+        "1/(60×1) + 1/(60×3)"
+      ],
+      "answer": 0,
+      "explanation": "RRF는 검색마다 1/(c+순위)를 구해서 더해요.\n그래서 1/61 + 1/63이 되고, 순위가 높을수록 점수가 커져요.\nBM25 점수와 코사인 유사도는 기준이 달라서 원래 점수를 바로 더하지 않아요.\n노아영(11/11): \"서로 기준이 다른 원래 점수 대신 검색별 순위를 사용\"",
+      "concept": {
+        "name": "RRF",
+        "ref": "LangChain 공식 문서 · EnsembleRetriever"
+      },
+      "sourceIds": [
+        "s5"
+      ]
+    },
+    {
+      "id": "q3",
+      "kind": "concept",
+      "type": "choice",
+      "prompt": "부모 문서 검색(Parent Document Retrieval)은 어떻게 동작하나요?",
+      "choices": [
+        "큰 부모 청크로 검색하고, 그 안의 작은 청크 하나만 LLM에 넘긴다",
+        "작은 자식 청크로 검색하고, 찾은 청크가 속한 큰 부모 청크를 넘긴다",
+        "부모와 자식 청크를 모두 검색해 점수가 높은 쪽만 남긴다",
+        "문서를 자르지 않고 한 덩어리로 임베딩해 그대로 넘긴다"
+      ],
+      "answer": 1,
+      "explanation": "작은 청크는 주제가 하나라 검색이 정확하지만, 앞뒤 맥락이 잘려 답하기엔 부족해요.\n큰 청크는 정보가 많지만, 주제가 섞여 검색이 무뎌져요.\n그래서 검색은 작은 청크로, LLM에게는 그 청크의 부모를 줘요.\n송지희(11/11): \"작은 청크(자식)로 유사도 검색을 하고 하나를 선택되면 해당 청크를 큰 청크(부모)로 해서 가져감\"",
+      "concept": {
+        "name": "부모 문서 검색",
+        "ref": "LangChain 공식 문서 · ParentDocumentRetriever"
+      },
+      "sourceIds": [
+        "s4",
+        "s6"
+      ]
+    },
+    {
+      "id": "q4",
+      "kind": "concept",
+      "type": "choice",
+      "prompt": "문서 10만 개가 든 저장소에서 벡터 검색으로 상위 30개를 뽑은 뒤, 그 30개에만 Cross-Encoder 리랭커를 적용했어요. 이렇게 나누는 이유로 알맞은 것은 무엇인가요?",
+      "choices": [
+        "Cross-Encoder는 30개가 넘는 문서를 입력으로 받을 수 없어서",
+        "Cross-Encoder가 벡터 검색보다 덜 정확해서 보조로만 써서",
+        "벡터 검색 점수와 리랭커 점수를 평균 내야 해서",
+        "Cross-Encoder는 질문·문서 쌍마다 새로 계산해 느려서"
+      ],
+      "answer": 3,
+      "explanation": "벡터 검색(Bi-Encoder)은 문서 벡터를 미리 만들어 두어 아주 빨라요.\nCross-Encoder는 질문과 문서를 한 쌍으로 넣어 더 정밀하지만, 쌍마다 계산해서 느려요.\n그래서 빠른 검색으로 후보를 줄인 뒤 후보에만 정밀 재평가를 해요.\n차승환(11/11): \"Cross-Encoder는 느리기 때문에 전체가 아닌 후보군에만 적용하는게 좋음\"",
+      "concept": {
+        "name": "Cross-Encoder 리랭킹",
+        "ref": "LangChain 공식 문서 · Cross Encoder Reranker"
+      },
+      "sourceIds": [
+        "s3",
+        "s2"
+      ]
+    },
+    {
+      "id": "q5",
+      "kind": "concept",
+      "type": "choice",
+      "prompt": "리랭킹으로 고른 문서 5개를 프롬프트에 넣어요. 답의 결정적 근거가 되는 문서를 어디에 두는 것이 좋나요?",
+      "choices": [
+        "컨텍스트 맨 앞에 둔다",
+        "컨텍스트 한가운데에 둔다",
+        "아무 데나 둬도 결과는 같다",
+        "중요한 문서는 빼고 요약만 넣는다"
+      ],
+      "answer": 0,
+      "explanation": "LLM은 긴 입력의 앞과 뒤는 잘 쓰지만 중간 정보는 놓치기 쉬워요 (Lost in the Middle).\n그래서 점수가 가장 높은 핵심 문서를 맨 앞에 두고, 보조 정보는 뒤로 보내요.\n근거 문서를 빼면 답의 근거 자체가 사라져요.\n이주현(11/11): \"llm은 입력 데이터의 맨 앞과 맨 뒤 정보는 잘 인식하지만 중간에 위치한 정보를 무시하는 경향이 있음\"",
+      "concept": {
+        "name": "Lost in the Middle",
+        "ref": "LangChain 공식 문서 · LongContextReorder"
+      },
+      "sourceIds": [
+        "s2"
+      ]
+    },
+    {
+      "id": "q6",
+      "kind": "concept",
+      "type": "choice",
+      "prompt": "사내 매출 DB에 자연어로 묻는 Text2SQL 챗봇을 만들어요. 설계로 가장 알맞은 것은 무엇인가요?",
+      "choices": [
+        "LLM이 DB 구조를 알고 있으니 스키마는 알려 주지 않는다",
+        "정리 작업도 맡기도록 DELETE, UPDATE까지 허용한다",
+        "스키마를 함께 주고, 읽기 전용으로 SELECT만 실행되게 한다",
+        "생성된 SQL은 정확하니 검증 없이 바로 실행한다"
+      ],
+      "answer": 2,
+      "explanation": "LLM은 우리 DB에 어떤 테이블과 열이 있는지 몰라서 스키마를 알려 줘야 해요.\n잘못 만든 SQL이 데이터를 지우지 않도록 읽기 전용 계정에서 SELECT만 허용해요.\n생성된 SQL은 실행 전에 검증하는 단계를 거쳐요.\n송지희(11/11): \"데이터베이스에 어떤 테이블이 있는지 알고 있는 것이 아니기 때문에 스키마 구조를 알려줘야 한다.\"",
+      "concept": {
+        "name": "Text2SQL 안전장치",
+        "ref": "LangChain 공식 문서 · SQLDatabase"
+      },
+      "sourceIds": [
+        "s4"
+      ]
+    },
+    {
+      "id": "q7",
+      "kind": "concept",
+      "type": "short",
+      "prompt": "에이전트가 \"상황 판단(추론) → 도구 실행(행동) → 결과 확인 → 다시 판단\"을 번갈아 반복하며 답을 만드는 핵심 방식의 이름은 무엇인가요? (영어 한 단어)",
+      "answer": [
+        "ReAct",
+        "Reasoning + Acting",
+        "Reasoning and Acting",
+        "리액트"
+      ],
+      "explanation": "ReAct는 Reasoning(추론)과 Acting(행동)을 합친 말이에요.\n어떤 도구가 필요한지 판단하고, 실행 결과를 보고 다음 행동을 다시 정해요.\n미리 정한 순서대로만 도는 고정 흐름과 다른 점이에요.\n정보경(11/12): \"llm에게 팔다리를 붙여서 도구를 쓸지말지 정하도록해줌\"",
+      "concept": {
+        "name": "ReAct",
+        "ref": "LangGraph 공식 문서 · create_react_agent"
+      },
+      "sourceIds": [
+        "s12",
+        "s8"
+      ]
+    },
+    {
+      "id": "q8",
+      "kind": "code",
+      "type": "choice",
+      "prompt": "문의를 담당 팀으로 보내는 그래프예요. 마지막 줄은 무엇을 출력하나요?",
+      "code": "from typing import Literal, TypedDict\nfrom langgraph.graph import StateGraph, START, END\n\nclass Ticket(TypedDict):\n    text: str\n    team: str\n\ndef sort_ticket(state: Ticket):\n    if \"환불\" in state[\"text\"]:\n        return {\"team\": \"billing\"}\n    if \"배송\" in state[\"text\"]:\n        return {\"team\": \"shipping\"}\n    return {\"team\": \"general\"}\n\ndef pick_team(state: Ticket) -> Literal[\"billing\", \"shipping\", \"general\"]:\n    return state[\"team\"]\n\ng = StateGraph(Ticket)\ng.add_node(\"sort\", sort_ticket)\ng.add_node(\"billing\", lambda s: {\"text\": \"결제팀 답변\"})\ng.add_node(\"shipping\", lambda s: {\"text\": \"배송팀 답변\"})\ng.add_node(\"general\", lambda s: {\"text\": \"일반 상담 답변\"})\ng.add_edge(START, \"sort\")\ng.add_conditional_edges(\"sort\", pick_team)\nfor name in [\"billing\", \"shipping\", \"general\"]:\n    g.add_edge(name, END)\n\napp = g.compile()\nprint(app.invoke({\"text\": \"배송 중인데 환불할 수 있나요?\", \"team\": \"\"})[\"text\"])",
+      "choices": [
+        "배송팀 답변",
+        "결제팀 답변",
+        "일반 상담 답변",
+        "배송 중인데 환불할 수 있나요?"
+      ],
+      "answer": 1,
+      "explanation": "sort_ticket은 위에서부터 조건을 검사해, 처음 맞는 \"환불\"에서 team을 billing으로 정해요.\n분기 함수 pick_team은 state의 team을 돌려주고, Literal에 적힌 이름의 노드로 가요.\n\"배송\"도 들어 있지만 앞 조건에서 이미 return해서 검사하지 않아요.\n노아영(11/12): \"Literal은 반환값의 후보를 명시하는 타입 힌트\"",
+      "concept": {
+        "name": "조건부 엣지와 Literal",
+        "ref": "LangGraph 공식 문서 · add_conditional_edges"
+      },
+      "sourceIds": [
+        "s11",
+        "s10"
+      ]
+    },
+    {
+      "id": "q9",
+      "kind": "code",
+      "type": "choice",
+      "prompt": "MessagesState로 만든 챗봇 그래프에 체크포인터를 붙였어요. 마지막 호출에 대한 설명으로 알맞은 것은 무엇인가요?",
+      "code": "bot = builder.compile(checkpointer=MemorySaver())\n\ncfg_a = {\"configurable\": {\"thread_id\": \"A\"}}\ncfg_b = {\"configurable\": {\"thread_id\": \"B\"}}\n\nbot.invoke({\"messages\": [(\"user\", \"내 별명은 감자야\")]}, cfg_a)\nbot.invoke({\"messages\": [(\"user\", \"오늘 비 와?\")]}, cfg_b)\nlast = bot.invoke({\"messages\": [(\"user\", \"내 별명 뭐라고 했지?\")]}, cfg_a)",
+      "choices": [
+        "A 스레드의 첫 대화가 이어져 별명이 감자라고 답할 수 있다",
+        "바로 앞 호출이 B라서 B 스레드의 대화가 이어진다",
+        "체크포인터는 마지막 한 번의 대화만 남겨 별명을 잊는다",
+        "같은 그래프라서 thread_id와 상관없이 세 대화가 모두 섞인다"
+      ],
+      "answer": 0,
+      "explanation": "체크포인터는 thread_id마다 대화 상태를 따로 저장해요.\n마지막 호출은 cfg_a를 넘겨서 A 스레드에 쌓인 첫 대화를 이어 받아요.\nB 스레드의 \"오늘 비 와?\"는 다른 대화라 섞이지 않아요.\n김준수(11/12): \"다른 ID를 사용하면 별도의 대화로 처리된다.\"",
+      "concept": {
+        "name": "체크포인터와 thread_id",
+        "ref": "LangGraph 공식 문서 · Persistence"
+      },
+      "sourceIds": [
+        "s7",
+        "s9"
+      ]
+    },
+    {
+      "id": "q10",
+      "kind": "code",
+      "type": "choice",
+      "prompt": "노트북에서 그래프를 만든 뒤, 다음 셀에서 인사말을 바꾸려고 함수만 다시 정의했어요. 마지막 줄은 무엇을 출력하나요?",
+      "code": "def greet(state: Hello):\n    return {\"reply\": \"안녕하세요\"}\n\nbuilder = StateGraph(Hello)\nbuilder.add_node(\"greet\", greet)\nbuilder.add_edge(START, \"greet\")\nbuilder.add_edge(\"greet\", END)\ngraph = builder.compile()\n\n# --- 다음 셀 ---\ndef greet(state: Hello):\n    return {\"reply\": \"반가워요!\"}\n\nprint(graph.invoke({\"reply\": \"\"})[\"reply\"])",
+      "choices": [
+        "반가워요!",
+        "빈 문자열",
+        "오류: greet가 두 번 정의됐다",
+        "안녕하세요"
+      ],
+      "answer": 3,
+      "explanation": "add_node는 등록하는 순간의 함수를 그래프에 담아 두고, compile은 그 상태로 실행 객체를 만들어요.\n같은 이름으로 함수를 다시 정의해도 이미 만든 graph는 옛 함수를 써요.\n바꾼 내용을 반영하려면 노드 등록부터 compile까지 다시 실행해야 해요.\n노아영(11/12): \"노드 함수를 수정하면 함수 정의 → 그래프 구성·등록 → 컴파일까지 다시 실행해야 변경 사항이 제대로 반영됨.\"",
+      "concept": {
+        "name": "수정 후 다시 컴파일",
+        "ref": "LangGraph 공식 문서 · StateGraph.compile"
+      },
+      "sourceIds": [
+        "s11",
+        "s7"
+      ]
+    }
+  ]
+}
