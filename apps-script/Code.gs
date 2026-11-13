@@ -110,6 +110,7 @@ function setPin(name, pin) {
   try {
     if (pinHashOf(name) !== null) return { ok: false, error: 'pin-exists' };
     pinsSheet().appendRow([name, hash(name, String(pin))]);
+    CacheService.getScriptCache().remove('fails:' + name); // a reset PIN also clears an old lock
     return { ok: true };
   } finally {
     lock.releaseLock();
