@@ -13,6 +13,10 @@
     "week": "node scripts/week.mjs",
     "lint:design": "node .claude/skills/design-taste-frontend/scripts/lint.mjs .",
     "check": "npm test && npm run validate && npm run lint:design",
-    "publish": "node scripts/publish-week.mjs"
+    "publish": "node scripts/publish-week.mjs",
+    "note": "node scripts/build-note.mjs"
+  },
+  "devDependencies": {
+    "docx": "9.5.1"
   }
 }

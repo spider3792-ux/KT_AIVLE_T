@@ -39,12 +39,12 @@ test('without --today the window ends on a Friday', () => {
   assert.equal(new Date(`${out.window.to}T00:00:00Z`).getUTCDay(), 5);
 });
 
-test('package.json has the week script, an unchanged check script and no dependencies', () => {
+test('package.json has the week script, an unchanged check script and only the note builder dev package', () => {
   const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
   assert.equal(pkg.scripts.week, 'node scripts/week.mjs');
   assert.equal(pkg.scripts.check, 'npm test && npm run validate && npm run lint:design');
   assert.equal(pkg.dependencies, undefined);
-  assert.equal(pkg.devDependencies, undefined);
+  assert.deepEqual(Object.keys(pkg.devDependencies ?? {}), ['docx']); // scripts/build-note.mjs only; the site itself loads nothing
 });
 
 test('isoWeekId vectors', () => {

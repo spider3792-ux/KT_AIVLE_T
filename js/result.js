@@ -31,7 +31,8 @@ export function renderScore(attempt, set) {
   return el(
     'section',
     { attrs: { id: 'score' } },
-    el('h2', { text: '채점 결과', attrs: { id: 'score-heading', tabindex: '-1' } }),
+    // the top row also takes the 복습 노트 link (js/quiz.js adds it once the week has a note)
+    el('div', { class: 'score-top' }, el('h2', { text: '채점 결과', attrs: { id: 'score-heading', tabindex: '-1' } })),
     el('p', { class: 'score-line' }, `${max.total}문제 중 `, num('total'), '문제 정답'),
     el('div', { class: 'score-figures' }, figure('개념', 'concept'), figure('코드 분석', 'code')),
     el('p', { class: 'attempt-member', text: who, attrs: { id: 'attempt-member' } }),

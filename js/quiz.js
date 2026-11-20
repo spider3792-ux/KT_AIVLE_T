@@ -1,5 +1,5 @@
 // Exam sheet controller: render the set, grade on 답안 제출, freeze the first attempt, show it again on reload.
-import { el, loadMembers, loadWeek, renderError, store } from './site.js';
+import { el, loadMembers, loadWeek, renderError, ROOT, store } from './site.js';
 import { gradeSet, isBlank, sanitizeAnswers } from './grade.js';
 import { reveal, stagger } from './motion.js';
 import { renderResultBlock, renderScore } from './result.js';
@@ -480,6 +480,7 @@ function showGraded(set, attempt, { focus, animate = focus }) {
   document.getElementById('status').textContent = `채점이 끝났어요. ${set.questions.length}문제 중 ${score.total}문제 정답이에요.`;
 
   if (!attempt.sample) {
+    mountReviewLink(set, section);
     mountTeam(set, attempt, results, section);
     showTeamRates(set);
   }
@@ -489,6 +490,19 @@ function showGraded(set, attempt, { focus, animate = focus }) {
     heading.focus({ preventScroll: true });
     heading.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
   }
+}
+
+// 복습 노트: top right of the score block, only when review/<week>.json exists.
+async function mountReviewLink(set, section) {
+  try {
+    const res = await fetch(new URL(`review/${set.id}.json`, ROOT), { method: 'HEAD', cache: 'no-cache' });
+    if (!res.ok) return;
+  } catch {
+    return;
+  }
+  const top = section.querySelector('.score-top');
+  if (!top || top.querySelector('.review-link')) return;
+  top.append(el('a', { class: 'text-link review-link', text: '복습 노트', attrs: { href: 'review.html?set=' + encodeURIComponent(set.id) } }));
 }
 
 // 팀 기록에 보내기: the frozen first attempt goes to the team sheet once, after the member's PIN.
