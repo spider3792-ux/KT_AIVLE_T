@@ -1,12 +1,9 @@
 // review.html?set=<week>: the week's review note, opened from the graded sheet's "복습 노트" link.
 // Shown only once this browser has the week's first attempt (it doubles as the answer sheet).
 import { el, getJson, store, renderError } from './site.js';
-import { checkNote, inlineParts, NOTE_ID } from './note-format.js';
+import { checkNote, NOTE_ID } from './note-format.js';
 
 const app = document.getElementById('app');
-
-const rich = (text) =>
-  inlineParts(text).map((p) => (p.kind === 'bold' ? el('strong', { text: p.text }) : p.kind === 'code' ? el('code', { text: p.text }) : p.text));
 
 async function start() {
   const id = new URLSearchParams(location.search).get('set') || '';
@@ -31,16 +28,14 @@ async function start() {
     { class: 'sheet-head rn-head' },
     el('a', { class: 'text-link rn-back', text: '← 채점 결과로', attrs: { href: sheet } }),
     el('h1', { text: note.title }),
-    (note.lead || []).map((t) => el('p', { class: 'rn-lead' }, rich(t))),
     el(
       'div',
       { class: 'rn-downloads' },
       el('a', { class: 'button', text: 'PDF 받기', attrs: { href: file('pdf'), download: `${id}-복습노트.pdf` } }),
       el('a', { class: 'button button--quiet', text: 'Word(.docx) 받기 · 수정 가능', attrs: { href: file('docx'), download: `${id}-복습노트.docx` } }),
       // a new tab, so the note sits next to the graded sheet
-      el('a', { class: 'button button--quiet', text: '새 창으로 열기', attrs: { href: file('pdf'), target: '_blank', rel: 'noopener noreferrer' } }),
+      el('a', { class: 'button button--quiet', text: '열기', attrs: { href: file('pdf'), target: '_blank', rel: 'noopener noreferrer' } }),
     ),
-    el('p', { class: 'rn-hint', text: '새 창으로 열면 PDF가 바로 보여서, 채점 결과 탭과 번갈아 보며 복습할 수 있어요.' }),
   );
   app.replaceChildren(el('article', { class: 'paper review-note' }, head));
 }

@@ -953,10 +953,6 @@ pre.code code {
   font-size: 1rem;
 }
 
-.rn-lead {
-  max-width: 46ch;
-  line-height: 1.6;
-}
 
 .rn-downloads {
   display: flex;
@@ -964,8 +960,3 @@ pre.code code {
   gap: 12px 16px;
 }
 
-.rn-hint {
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.5;
-}
